@@ -1170,27 +1170,28 @@ const defaultTimelineConfig = {
 /**
  * The class representing the Timeline.  This is the point of access to this tool.
  * The simplest usage is to instantiate a new Timeline object, and then call the create() method.
+ * @alias Timeline
  */
 class Timeline {
 	/**
-	 * @param {string} [container = "diagram"] - The ID of the container element for the timeline.
+	 * @param {string} [container = diagram] - The ID of the container element for the timeline.
 	 * @param {object} [config] - All config for the timeline
 	 * @param {boolean} [config.panzoom = false] - Whether to apply panning and zooming feature to the timeline.
-	 * @param {$string} [config.findForm = "timeline-find"] - The ID of the find form
-	 * @param {string} [config.zoomIn = "timeline-zoom-in"] - The ID of the button to zoom in
-	 * @param {string} [config.zoomOut = "timeline-zoom-out"] - The ID of the button to zoom out
-	 * @param {string} [config.zoomReset = "timeline-zoom-reset"] - The ID of the button to reset the zoom level
+	 * @param {string} [config.findForm = timeline-find] - The ID of the find form
+	 * @param {string} [config.zoomIn = timeline-zoom-in] - The ID of the button to zoom in
+	 * @param {string} [config.zoomOut = timeline-zoom-out] - The ID of the button to zoom out
+	 * @param {string} [config.zoomReset = timeline-zoom-reset] - The ID of the button to reset the zoom level
 	 * @param {number} [config.yearStart = 1900] - the starting year for the timeline
 	 * @param {number} [config.yearEnd = Current year + 1] - the end year for the timeline
 	 * @param {number} [config.strokeWidth = 4] - the width in px of the joining lines
-	 * @param {number} [config.yearWidth = 50] - the width in px of diagram used to for each year
+	 * @param {number} [config.yearWidth = 50] - the width in px of diagram used for each year
 	 * @param {number} [config.rowHeight = 50] - the height in px of each diagram row
 	 * @param {number} [config.padding = 5] - the padding in px between rows
-	 * @param {string} [config.strokeColour = "#999"] - the default colour for lines drawn (must be a valid colour hex)
+	 * @param {string} [config.strokeColour = #999] - the default colour for lines drawn (must be a valid colour hex)
 	 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
-	 * @param {string} [config.entrySelector = "div"] - the CSS selector used for entries
+	 * @param {string} [config.entrySelector = div] - the CSS selector used for entries
 	 */
 	constructor(container = "diagram", config = {}) {
 		this._container = container;
@@ -1220,7 +1221,7 @@ class Timeline {
 	
 	/**
 	 * Take the provided config, separate config for the Diagram drawing class, and add in defaults for undefined properties.
-	 * @protected
+	 * @private
 	 * @param {object} config
 	 */
 	_setConfig(config) {
@@ -1230,7 +1231,8 @@ class Timeline {
 	
 	/**
 	 * If Panzoom is enabled, pan to the element with the given ID, and reset the zoom.
-	 * @param {string} id
+	 * @param {string} id - The ID of a timeline entry
+	 * @fires Timeline#timelineFind
 	 */
 	panToEntry(id) {
 		if (this._config.panzoom !== true) {
@@ -1255,9 +1257,18 @@ class Timeline {
 	}
 	
 	/**
+	 * timelineFind event.
+	 * @event Timeline#timelineFind
+	 * @type {object}
+	 * @property {object} details
+	 * @property {string} details.id - the ID of the entry
+	 * @property {string} details.name - the name of the entry
+	 */
+	
+	/**
 	 * Bind the zoom controls to the configured element IDs, if present in the document.
 	 * Prepare empty container for entry filter if find form is present.
-	 * @protected
+	 * @private
 	 */
 	_initControls() {
 		const zoomIn = document.getElementById(this._config.zoomIn);
@@ -1273,6 +1284,10 @@ class Timeline {
 		}
 	}
 	
+	/**
+	 * Set up the find form
+	 * @private
+	 */
 	_initFindForm(form) {
 		//Add the ID input
 		const idInput = document.createElement("input");
@@ -1317,7 +1332,7 @@ class Timeline {
 	
 	/**
 	 * Add entries to the "#filtered-entries", filtered by the value of the event-triggering input.
-	 * @protected
+	 * @private
 	 * @param {object} e
 	 */
 	_showEntryOptions(e) {
@@ -1341,7 +1356,7 @@ class Timeline {
 	
 	/**
 	 * Filter the list of entries to match the provided search string.
-	 * @protected
+	 * @private
 	 * @param {string} search
 	 * @return {array}
 	 */
@@ -1358,6 +1373,7 @@ class Timeline {
 	
 	/**
 	 * Submit the clicked entry in the filtered list.
+	 * @private
 	 * @param {object} e
 	 */
 	_selectFilteredEntry(e) {
@@ -1376,6 +1392,7 @@ class Timeline {
 	/**
 	 * The submit action of the find form.
 	 * Pan to the entry with submitted ID, if it exists.
+	 * @private
 	 * @param {object} e
 	 * @fires Timeline#timelineFind
 	 */
@@ -1393,8 +1410,8 @@ class Timeline {
 	
 	/** 
 	 * Initialised Panzoom on the diagram.
+	 * @private
 	 * @throws {Error} Will throw an error if Panzoom isn't found.
-	 * @protected
 	 */
 	_panzoomInit() {
 		if (typeof Panzoom === "undefined") {
@@ -1423,7 +1440,7 @@ class Timeline {
 	
 	/**
 	 * Handle URL hash. Hash of format '#find-{ID}' will pan to the given entry ID, if it exists.
-	 * @protected
+	 * @private
 	 * @param {object} e
 	 */
 	_hashHandler(e) {
