@@ -1,4 +1,3 @@
-
 This module draws a timeline diagram, using SVGs to link entries.
 
 It was originally created to illustrate the development of left-wing political organisations in Ireland, as part of the Irish Left Archive. For a full-featured live example demonstrating the features documented below, visit the [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/).
@@ -199,6 +198,7 @@ timelineFind event.
 
 
 <a name="entry-positioning" />
+
 Entry Positioning
 ---
 
