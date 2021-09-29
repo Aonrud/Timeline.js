@@ -3,8 +3,9 @@ This module draws a timeline diagram, using SVGs to link entries.
 
 It was originally created to illustrate the development of left-wing political organisations in Ireland, as part of the Irish Left Archive. For a full-featured live example demonstrating the features documented below, visit the [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/).
 
-<a name="usage" />
-Basic Usage
+<a name="use" />
+
+Basic Use
 ---
 
 To use the timeline:
@@ -14,28 +15,35 @@ To use the timeline:
 * Add your timeline entries as `<div>` elements within div#diagram, with the appropriate `data-` attributes (see **HTML data attributes** below).
 * Instantiate a new Timeline in JS, and call the create() method on it.
 
-Simple example:
+Simple example including some configuration options, and a mixture of automatic and manual row positioning:
 
-```HTML
+```html
 
 <div id="diagram">
-	<a id="A" data-start="1975" data-end="1982">A</a>
-	<a id="B" data-start="1972" data-merge="A" data-end="1978">B</a>
-	<a id="C" data-start="1980" data-split="A" data-become="D">C</a>
-	<a id="D" data-start="1985" data-become="E">D</a>
-	<a id="E" data-start="1990">E</a>
+	<div id="A" data-start="1975" data-end="1982">A</div>
+	<div id="B" data-start="1972" data-merge="A" data-end="1978">B</div>
+	<div id="C" data-start="1980" data-links="A I" data-colour="#faa" data-become="D">C</div>
+	<div id="D" data-start="1985" data-become="E">D</div>
+	<div id="E" data-start="1990" >E</div>
+	<div id="F" data-start="1988" data-split="D" data-colour="#395">F</div>
+	<div id="G" data-start="1973" data-row="3" data-fork="H I">G</div>
+	<div id="H" data-start="1976" data-end="1995">H</div>
+	<div id="I" data-start="1976" data-row="4" data-end="1982" data-end-estimate="true">I</div>
 </div>
 ```
 
-```Javascript
+```javascript
 
-const t = new Timeline();
-t.create();
+const example = new Timeline("diagram", { 
+	yearStart: 1970,
+	yearEnd: 2000
+});
+example.create();
 ```
 
-This is rendered as:
+This is rendered as below:
 
-![](./images/simple-example.png)
+![](./images/example.png)
 
 Javascript modules
 ---
@@ -55,7 +63,7 @@ The following data attributes then determine the position and connections of the
 |-----------|-----------|-------|-------|
 |data-start|Yes|`<number>` A year|The year the entry starts at in the timeline|
 |data-end|No|`<number>` A year|The year the entry ends. If omitted, this will be determined either by other connections, or if there are none, it will continue to the end of the timeline|
-|data-row|No|`<number>`|The row number this entry should appear in. This can be omitted, though automatic positioning is quite basic. It is recommended to use manual positioning or a combination of both for large or complex diagrams (see **Entry Positioning** below).|
+|data-row|No|`<number>`| *Note: The first row is '0'*. <br />The row number this entry should appear in. This can be omitted, though automatic positioning is quite basic. It is recommended to use manual positioning or a combination of both for large or complex diagrams (see [Entry Positioning](#entry-positioning) below).|
 |data-end-estimate|No|true or false|Whether the end is an estimate. Estimated end times are shown with a dashed end to the line, instead of a point.|
 |data-become|No|Another entry ID|The entry 'becomes' another entry. I.e. another entry is the continuation of this entry, and it will be drawn on the same line.  For example, use this when an entry changes its name.|
 |data-split|No|Another entry ID|If specified, the entry will be shown branching from the specified entry, at the year specified in 'data-start'.|
@@ -66,12 +74,14 @@ The following data attributes then determine the position and connections of the
 
 
 <a name="panzoom" />
+
 Panning and Zooming
 ---
 
 For large diagrams, Timeline can make use of [@panzoom/panzoom](https://github.com/timmywil/panzoom) to add panning and zooming to the diagram within a fixed container. Include @panzoom/panzoom in your dependencies (it is not bundled), and pass 'panzoom: true' in the config when instantiating the timeline (see [Javascript Options](#javascript) below).
 
 <a name="controls_search" />
+
 Controls and searching
 ---
 
@@ -96,7 +106,7 @@ An example putting these together as a controls div within the diagram.
 
 The provided classes will position the controls in a box in the bottom right corner of the timeline container.
 
-```HTML
+```html
 <div class="controls">
 	<form id="timeline-find">
 			<input type="text" name="finder" 
@@ -112,12 +122,13 @@ The provided classes will position the controls in a box in the bottom right cor
 ```
 
 <a name="javascript" />
+
 Javascript Options
 ---
 
 The main Timeline class is documented below.  Note that configuration is optional - any or none of these options can be passed in the config object. If specifying a config, you must also pass the container ID as the first parameter when creating the timeline.
 
-## Timeline
+### Timeline
 The class representing the Timeline.  This is the point of access to this tool.
 The simplest usage is to instantiate a new Timeline object, and then call the create() method.
 
