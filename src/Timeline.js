@@ -70,13 +70,11 @@ class Timeline {
 	create() {
 		const d = new Diagram(this._container, this._diagramConfig);
 		this._diagram = d.create();
-		
-		if (this._config.popovers === true) {
-			this._popoversInit();
-		}
+
 		if (this._config.panzoom === true) {
-			this._panzoomInit();
+			this._initPanzoom();
 			this._initControls();
+			window.addEventListener('hashchange', (e) => this._hashHandler(e));
 		}
 		if (location.hash) {
 			setTimeout(() => {
@@ -279,7 +277,7 @@ class Timeline {
 	 * @private
 	 * @throws {Error} Will throw an error if Panzoom isn't found.
 	 */
-	_panzoomInit() {
+	_initPanzoom() {
 		if (typeof Panzoom === "undefined") {
 			throw new Error("Missing dependency. External Panzoom library (@panzoom/panzoom) is required to use the panzoom feature.");
 		}
@@ -301,7 +299,6 @@ class Timeline {
 			}
 		});
 		this._diagram.parentElement.addEventListener('wheel', this._pz.zoomWithWheel);
-		window.addEventListener('hashchange', (e) => this._hashHandler(e));
 	}
 	
 	/**
