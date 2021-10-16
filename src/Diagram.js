@@ -161,10 +161,9 @@ class Diagram {
 		
 		//Adjust spacing for entries that overlap
 		//Accomodates entries that are both the same year
-		//Width needs to be known before nudging, so has to be separated
-		//TODO: this should be just the data-become nodes - surely we don't need to keep looping them all?
-		for (const entry of this._entries) {
-			if (entry.dataset.become && entry.dataset.start == document.getElementById(entry.dataset.become).dataset.start) {
+		//Width needs to be known before nudging, so this has to be separated
+		for (const entry of this._container.querySelectorAll(this._config.entrySelector + '[data-become]')) {
+			if (entry.dataset.start == document.getElementById(entry.dataset.become).dataset.start) {
 				entry.style.left = parseFloat(entry.style.left) - this._config.boxMinWidth/2 + "px";
 				document.getElementById(entry.dataset.become).style.left = parseFloat(document.getElementById(entry.dataset.become).style.left) + this._config.boxMinWidth/2 + "px";
 			}
