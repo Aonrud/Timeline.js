@@ -1419,4 +1419,4 @@ class Timeline {
 	}
 }
 
-export default Timeline;
+export { Timeline as default };
