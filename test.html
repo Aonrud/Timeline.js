@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test</title>
+		<meta charset="utf-8" />
+		<link href="dist/timeline.min.css" rel="stylesheet" type="text/css" />
+	</head>
+	<body>
+		<div id="diagram">
+			<div id="A" data-start="1975" data-end="1982">A</div>
+			<div id="B" data-start="1972" data-merge="A" data-end="1978">B Merging Entry</div>
+			<div id="C" data-start="1980" data-links="A I" data-colour="#faa" data-become="D">C Colour and Links</div>
+			<div id="D" data-start="1985" data-become="E">D Name Changes</div>
+			<div id="E" data-start="1990" >E Name Changes</div>
+			<div id="F" data-start="1988" data-split="D" data-colour="#395">F Splitting Entry</div>
+			<div id="G" data-start="1973" data-row="3" data-fork="H I">G Forking Entry</div>
+			<div id="H" data-start="1976" data-end="1995" data-irregular="true">H Irregular Entry</div>
+			<div id="I" data-start="1976" data-row="4" data-end="1982" data-end-estimate="true">I End Estimated</div>
+			<div id="J" data-start="1990" data-split="H" data-become="K">J Overlapping Entry</div>
+			<div id="K" data-start="1990" data-end="1993">K Overlapping Entry</div>
+			<div id="L" data-start="1985" data-end="1995">L Broken Links</div>
+		</div>
+		<script src="dist/timeline.js"></script>
+		<script>
+			const t = new Timeline("diagram", { yearStart: 1970 });
+			t.create();
+		</script>
+	</body>
+</html>

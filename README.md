@@ -70,6 +70,7 @@ The following data attributes then determine the position and connections of the
 |data-fork|No|Two space-separated entry IDs|If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
 |data-colour|No|A CSS colour hex|The colour of the border around the entry and connections from it. |
+|data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
 
 
 <a name="panzoom" />
@@ -145,9 +146,9 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [container] | <code>string</code> | <code>&quot;diagram&quot;</code> | The ID of the container element for the timeline. |
+| [container] | <code>string</code> | <code>&quot;diagram&quot;</code> | The ID of the container element for the timeline |
 | [config] | <code>object</code> |  | All config for the timeline |
-| [config.panzoom] | <code>boolean</code> | <code>false</code> | Whether to apply panning and zooming feature to the timeline. |
+| [config.panzoom] | <code>boolean</code> | <code>false</code> | Whether to apply panning and zooming feature to the timeline |
 | [config.findForm] | <code>string</code> | <code>&quot;timeline-find&quot;</code> | The ID of the find form |
 | [config.zoomIn] | <code>string</code> | <code>&quot;timeline-zoom-in&quot;</code> | The ID of the button to zoom in |
 | [config.zoomOut] | <code>string</code> | <code>&quot;timeline-zoom-out&quot;</code> | The ID of the button to zoom out |
@@ -163,6 +164,8 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 | [config.guides] | <code>boolean</code> | <code>true</code> | whether to draw striped guides at regular intervals in the timeline |
 | [config.guideInterval] | <code>number</code> | <code>5</code> | the interval in years between guides (ignored if 'guides' is false) |
 | [config.entrySelector] | <code>string</code> | <code>&quot;div&quot;</code> | the CSS selector used for entries |
+| [config.linkDashes] | <code>string</code> | <code>4</code> | The svg dasharray for link lines. (Must be a valid dasharray - see <https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray>) |
+| [config.irregularDashes] | <code>string</code> | <code>20 2</code> |  The svg dasharray for entries marked as 'irregular' with the data-irregular attribute. (Must be a valid dasharray - see <https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray>) |
 
 <a name="Timeline+create"></a>
 

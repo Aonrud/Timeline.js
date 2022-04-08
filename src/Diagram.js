@@ -16,7 +16,9 @@ const defaultDiagramConfig = {
 	boxWidth: 100,
 	guides: true,
 	guideInterval: 5,
-	entrySelector: "div"
+	entrySelector: "div",
+	linkDashes: "4",
+	irregularDashes: "20 2"
 }
 
 /**
@@ -40,8 +42,12 @@ class Diagram {
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
 	 * @param {string} [config.entrySelector = "div"] - the CSS selector to match entries
+	 * @param {string} [config.linkDashes = "4"] - The svg dasharray for link lines.
+	 * 								Must be a valid dasharray. See <https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray>
+	 * @param {string} [config.irregularDashes = "20 2"] - The svg dasharray for entries marked as 'irregular' with the data-irregular attribute.
+	 * 								Must be a valid dasharray. See <https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray>
 	 */
-	constructor(container, config = {}) {
+	constructor(container, config = {}) {		
 		this._config = this._makeConfig(config);
 		this._applyCSSProperties();
 		this._container = document.getElementById(container);
@@ -107,7 +113,7 @@ class Diagram {
 	_prepareEntries() {
 		for (const entry of this._entries) {
 			entry.classList.add("entry");
-			entry.dataset.end = (entry.dataset.end ? entry.dataset.end : this._calcEnd(entry));
+			entry.dataset.end = this._calcEnd(entry);
 		}
 	}
 	
@@ -221,28 +227,58 @@ class Diagram {
 	_draw() {
 		for (const entry of this._entries) {
 			
+			//First, draw the line from the entry to it's end (whether another entry, or a merge line, or an end point).
+			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
+			const dasharray = (entry.dataset.irregular == "true" ? this._config.irregularDashes : "");
+			
+			let endMarker = "";
+			let cssClass = "end";
+			let start = this._getJoinCoords(entry, "right");
+			let end = {
+				x: this._yearToWidth(entry.dataset.end),
+				y: start.y
+			};
+			
 			//Ends without joining another entry
-			if (entry.dataset.hasOwnProperty("end") &&
-				!entry.dataset.hasOwnProperty("merge") &&
+			if (!entry.dataset.hasOwnProperty("merge") &&
 				!entry.dataset.hasOwnProperty("fork") &&
 				!entry.dataset.hasOwnProperty("become")
 			) {
-				this._drawEnd(entry);
+				endMarker = (entry.dataset.endEstimate ? "dots" : "circle");
 			}
-			if (entry.dataset.hasOwnProperty("split")) {
-				this._drawSplit(entry);
+			
+			if (entry.dataset.hasOwnProperty("become")) { 
+				end = this._getJoinCoords(document.getElementById(entry.dataset.become), 'left');
+				cssClass = "become";
 			}
-			if (entry.dataset.hasOwnProperty("become")) {
-				this._drawBecome(entry);
-			}
+			
 			if (entry.dataset.hasOwnProperty("merge")) {
-				this._drawMerge(entry);
+				const mergePoint = {
+					x: end.x,
+					y: this._getYCentre(document.getElementById(entry.dataset.merge))
+				}
+				
+				//Merged entry's line ends a bit earlier, so as to go diagonally to meet the other entry at the year mark.
+				end.x = end.x - this._config.yearWidth;
+				const merge = SvgConnector.draw({ start: end, end: mergePoint, stroke: this._config.strokeWidth, colour: colour });
+				merge.classList.add("merge");
+				this._container.append(merge);
+				cssClass = "merge";
+			}
+			
+			const line = SvgConnector.draw({ start: start, end: end, stroke: this._config.strokeWidth, colour: colour, markers: ["", endMarker], dashes: dasharray });
+			line.classList.add(cssClass);
+			
+			this._container.append(line);
+
+			if (entry.dataset.hasOwnProperty("split")) {
+				this._drawSplit(entry, colour);
 			}
 			if (entry.dataset.hasOwnProperty("fork")) {
-				this._drawFork(entry);
+ 				this._drawForks(entry, colour);
 			}
 			if (entry.dataset.hasOwnProperty("links")) {
-				this._drawLinks(entry);
+				this._drawLinks(entry, colour);
 			}
 		}
 	}
@@ -251,99 +287,39 @@ class Diagram {
 	 * Draw splits.
 	 * @protected
 	 * @param {HTMLElement} entry
+	 * @param {string} colour
 	 */
-	_drawSplit(entry) {
+	_drawSplit(entry, colour) {
 		const source = document.getElementById(entry.dataset.split);
-		const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
 		
 		let direction = "top";
 		if (parseInt(entry.dataset.row) < parseInt(source.dataset.row)) {
 			direction = "bottom";			
 		}
 		
-		let start = {
+		const start = {
 			x: this._yearToWidth(entry.dataset.start),
 			y: this._getYCentre(source)
 		}
-		let end = this._getJoinCoords(entry, direction);
+		const end = this._getJoinCoords(entry, direction);
 		
-		const connector = SvgConnector.draw( { start: start, end: end, stroke: this._config.strokeWidth, colour: colour });
-		connector.classList.add("split");
+		const line = SvgConnector.draw( { start: start, end: end, stroke: this._config.strokeWidth, colour: colour });
 		
-		this._container.append(connector);
-	}
-		
-	/**
-	 * Draw 'becomes' lines.
-	 * @protected
-	 * @param {HTMLElement} entry
-	 */
-	_drawBecome(entry) {
-		const start = this._getJoinCoords(entry, "right");
-		const end = this._getJoinCoords(document.getElementById(entry.dataset.become), 'left');
-		
-		const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
-		
-		const connector = SvgConnector.draw( { start: start, end: end, stroke: this._config.strokeWidth, colour: colour });
-		connector.classList.add("become");
-		this._container.append(connector);
-	}
-	
-	/**
-	 * Draw lines to end of entry time.
-	 * @protected
-	 * @param {HTMLElement} entry
-	 */
-	_drawEnd(entry) {
-		let start = this._getJoinCoords(entry, "right");
-		let end = {
-			x: this._yearToWidth(entry.dataset.end),
-			y: this._getJoinCoords(entry, "right").y
-		};
-		
-		const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
-		const endMarker = (entry.dataset.endEstimate ? "dots" : "circle");
-		
-		const connector = SvgConnector.draw({ start: start, end: end, stroke: this._config.strokeWidth, colour: colour, markers: ["", endMarker] });
-		connector.classList.add("end");
-		this._container.append(connector);
-	}
-	
-	/**
-	 * Draw merge lines.
-	 * @protected
-	 * @param {HTMLElement} entry
-	 */
-	_drawMerge(entry) {
-		const start = this._getJoinCoords(entry, "right");
-		const mid = {
-			x: this._yearToWidth(entry.dataset.end) - this._config.yearWidth,
-			y: this._getYCentre(entry)
-		}
-		const end = {
-			x: this._yearToWidth(entry.dataset.end),
-			y: this._getYCentre(document.getElementById(entry.dataset.merge))
-		}
-		
-		const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
-				
-		const connector1 = SvgConnector.draw({ start: start, end: mid, stroke: this._config.strokeWidth, colour: colour });
-		const connector2 = SvgConnector.draw({ start: mid, end: end, stroke: this._config.strokeWidth, colour: colour });
-		connector1.classList.add("merge");
-		connector2.classList.add("merge");
-		this._container.append(connector1, connector2);
+		line.classList.add("split");
+		this._container.append(line);
 	}
 	
 	/**
 	 * Draw forks.
 	 * @protected
 	 * @param {HTMLElement} entry
+	 * @param {string} colour
 	 */
-	_drawFork(entry) {
+	_drawForks(entry, colour) {
 		const forks = entry.dataset.fork.split(" ");
-		const forkYear = this._calcEnd(entry);
-		const start = this._getJoinCoords(entry, "right");
-		const mid = {
+		const forkYear = parseInt(entry.dataset.end);
+
+		const start = {
 			x: this._yearToWidth(forkYear),
 			y: this._getYCentre(entry)
 		}
@@ -355,25 +331,26 @@ class Diagram {
 			x: this._yearToWidth(forkYear+1),
 			y: this._getYCentre(document.getElementById(forks[1]))
 		}
-		const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
 		
-		const l1 = SvgConnector.draw({ start: start, end: mid, stroke: this._config.strokeWidth, colour: colour});
-		const l2 = SvgConnector.draw({ start: mid, end: end1, stroke: this._config.strokeWidth, colour: colour });
-		const l3 = SvgConnector.draw({ start: mid, end: end2, stroke: this._config.strokeWidth, colour: colour });
+		console.log(start);
+		console.log(end1);
+		console.log(end2);
 		
-		l1.classList.add("fork");
-		l2.classList.add("fork");
-		l3.classList.add("fork");
+		const fork1 = SvgConnector.draw({ start: start, end: end1, stroke: this._config.strokeWidth, colour: colour });
+		const fork2 = SvgConnector.draw({ start: start, end: end2, stroke: this._config.strokeWidth, colour: colour });
 		
-		this._container.append(l1, l2, l3);
+		fork1.classList.add("fork");
+		fork2.classList.add("fork");
+		this._container.append(fork1, fork2);
 	}
 	
 	/**
 	 * Draw links.
 	 * @protected
 	 * @param {HTMLElement} entry
+	 * @param {string} colour
 	 */
-	_drawLinks(entry) {
+	_drawLinks(entry, colour) {
 		const links = entry.dataset.links.split(" ");
 		
 		//Count links drawn on each side, so additional ones can be offset to avoid overlap.
@@ -386,7 +363,9 @@ class Diagram {
 		
 		for (const link of links) {
 			const target = document.getElementById(link);
-			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
+			if (!target) {
+				console.warn(`${entry.id} links to non-existant ID ${link}`);
+			}
 			
 			let sourceSide, targetSide, start = { x: 0, y: 0}, end = { x: 0, y: 0};
 			
@@ -428,7 +407,7 @@ class Diagram {
 				end.x = this._yearToWidth(target.dataset.end);
 			}
 			
-			//If the year is the same, link the the entry box, not the line
+			//If the year is the same, link the entry box, not the line
 			if(entry.dataset.start == target.dataset.start) {
 				end = this._getJoinCoords(target, targetSide);
 			}
@@ -439,7 +418,7 @@ class Diagram {
 				stroke: this._config.strokeWidth/2,
 				colour: colour,
 				markers: ["square", "square"],
-				dashes: "4"
+				dashes: this._config.linksDashes
 			});
 			connector.classList.add("link");
 			this._container.append(connector);
@@ -513,7 +492,7 @@ class Diagram {
 	}
 	
 	/**
-	 * Calculate the end date for an entry, if not set.
+	 * Return the end date for an entry, whether explicitly set or not.
 	 * @protected
 	 * @param {HTMLElement} entry
 	 * @return {number}
