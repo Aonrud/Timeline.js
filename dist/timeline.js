@@ -573,7 +573,6 @@
 		strokeColour: "#999",
 		boxWidth: 100,
 		guides: true,
-		titles: false,
 		guideInterval: 5,
 		entrySelector: "div"
 	};
@@ -597,7 +596,6 @@
 		 * @param {string} [config.strokeColour = "#999"] - the default colour for lines drawn (must be a valid colour hex)
 		 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 		 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
-		 * @param {boolean} [config.titles = false] - whether to include title elements on the connecting lines describing the connection
 		 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
 		 * @param {string} [config.entrySelector = "div"] - the CSS selector to match entries
 		 */
@@ -814,7 +812,6 @@
 		 */
 		_drawSplit(entry) {
 			const source = document.getElementById(entry.dataset.split);
-			//const title = (this._config.titles ? `${entry.innerText} split from ${source.innerText} in ${entry.dataset.start}.` : "");
 			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
 			
 			let direction = "top";
@@ -843,7 +840,6 @@
 			const start = this._getJoinCoords(entry, "right");
 			const end = this._getJoinCoords(document.getElementById(entry.dataset.become), 'left');
 			
-			//const title = (this._config.titles ? `${entry.innerText} became ${document.getElementById(entry.dataset.become).innerText} in ${entry.dataset.start}.` : "");
 			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
 			
 			const connector = SvgConnector.draw( { start: start, end: end, stroke: this._config.strokeWidth, colour: colour });
@@ -888,7 +884,6 @@
 			};
 			
 			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
-			//const title = (this._config.titles ? `${entry.innerText} merged with ${document.getElementById(entry.dataset.merge).innerText} in ${entry.dataset.end}.` : "");
 					
 			const connector1 = SvgConnector.draw({ start: start, end: mid, stroke: this._config.strokeWidth, colour: colour });
 			const connector2 = SvgConnector.draw({ start: mid, end: end, stroke: this._config.strokeWidth, colour: colour });
