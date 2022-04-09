@@ -332,10 +332,6 @@ class Diagram {
 			y: this._getYCentre(document.getElementById(forks[1]))
 		}
 		
-		console.log(start);
-		console.log(end1);
-		console.log(end2);
-		
 		const fork1 = SvgConnector.draw({ start: start, end: end1, stroke: this._config.strokeWidth, colour: colour });
 		const fork2 = SvgConnector.draw({ start: start, end: end2, stroke: this._config.strokeWidth, colour: colour });
 		
@@ -418,7 +414,7 @@ class Diagram {
 				stroke: this._config.strokeWidth/2,
 				colour: colour,
 				markers: ["square", "square"],
-				dashes: this._config.linksDashes
+				dashes: this._config.linkDashes
 			});
 			connector.classList.add("link");
 			this._container.append(connector);
