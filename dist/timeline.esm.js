@@ -479,9 +479,14 @@ class DiagramPositioner {
 	 * @return {boolean}
 	 */
 	_checkGridSpace(y, start, end) {
+		//In most instances, we don't want to extend to the end of the "end" year, but to the start. So that, e.g. we can join with another entry starting on that year and not overlap.  However, entries with the same start and end must take up some space.
+		if (start === end) {
+			end += 1;
+		}
+		
 		const part = this._grid[y].slice(start, end);
 		let result = part.every( e => e === false);
-		return result;		
+		return result;
 	}
 	
 	/**
@@ -779,7 +784,6 @@ class Diagram {
 	_draw() {
 		for (const entry of this._entries) {
 			
-			//First, draw the line from the entry to it's end (whether another entry, or a merge line, or an end point).
 			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
 			const dasharray = (entry.dataset.irregular == "true" ? this._config.irregularDashes : "");
 			
@@ -805,6 +809,11 @@ class Diagram {
 			}
 			
 			if (entry.dataset.hasOwnProperty("merge")) {
+				//Special case of one year length and then merging. We need to bump the merge point forward by 1 year to meet an 'end of year' point. Otherwise, it's indistinguishable from a split.
+				if (entry.dataset.start == entry.dataset.end) {
+					end.x += this._config.yearWidth;
+				}
+				
 				const mergePoint = {
 					x: end.x,
 					y: this._getYCentre(document.getElementById(entry.dataset.merge))
@@ -817,11 +826,13 @@ class Diagram {
 				this._container.append(merge);
 				cssClass = "merge";
 			}
-			
-			const line = SvgConnector.draw({ start: start, end: end, stroke: this._config.strokeWidth, colour: colour, markers: ["", endMarker], dashes: dasharray });
-			line.classList.add(cssClass);
-			
-			this._container.append(line);
+				
+			//Nothing to draw here if entry starts and ends on the same year
+			if (entry.dataset.start !== entry.dataset.end) {
+				const line = SvgConnector.draw({ start: start, end: end, stroke: this._config.strokeWidth, colour: colour, markers: ["", endMarker], dashes: dasharray });
+				line.classList.add(cssClass);
+				this._container.append(line);
+			}
 
 			if (entry.dataset.hasOwnProperty("split")) {
 				this._drawSplit(entry, colour);

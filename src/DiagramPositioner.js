@@ -207,9 +207,14 @@ class DiagramPositioner {
 	 * @return {boolean}
 	 */
 	_checkGridSpace(y, start, end) {
+		//In most instances, we don't want to extend to the end of the "end" year, but to the start. So that, e.g. we can join with another entry starting on that year and not overlap.  However, entries with the same start and end must take up some space.
+		if (start === end) {
+			end += 1;
+		}
+		
 		const part = this._grid[y].slice(start, end);
 		let result = part.every( e => e === false);
-		return result;		
+		return result;
 	}
 	
 	/**
