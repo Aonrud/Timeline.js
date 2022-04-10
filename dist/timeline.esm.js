@@ -303,7 +303,12 @@ class DiagramPositioner {
 		}
 		
 		if (entry.dataset.merge) {
-			seek = document.getElementById(entry.dataset.merge);
+			const mergeEl = document.getElementById(entry.dataset.merge);
+			
+			//Prevent infinite recursion if merging with an entry which split from this one
+			if(mergeEl.dataset.split !== entry.id) {
+				seek = document.getElementById(entry.dataset.merge);
+			}
 		}
 		
 		if (entry.dataset.fork) {
