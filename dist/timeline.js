@@ -18,7 +18,7 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
 	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Timeline = factory());
-}(this, (function () { 'use strict';
+})(this, (function () { 'use strict';
 
 	const svgns = "http://www.w3.org/2000/svg";
 
@@ -40,7 +40,7 @@
 		 * @param {number} settings.end.x
 		 * @param {number} settings.end.y
 		 * @param {string} settings.stroke - The stroke width in px of the line
-		 * @param {string} settings.colour - The colour of the line. Must be a valid hex colour.
+		 * @param {string} settings.colour - The colour of the line. Will be set on the SVG element and inherited, so can be e.g. a CSS var().
 		 * @param {array.<string>} [settings.markers] - An array of two string values indicating the start and end markers respectively.
 		 * 		Valid values are "circle", "square" and "dots" (the last can only be used for end).
 		 * @param {string} [settings.dashes] - A dasharray string for the SVG line. If omitted, a solid line will be used.
@@ -90,14 +90,15 @@
 			svg.setAttribute("width", Math.abs(xDisplacement) + offset*2);
 			svg.setAttribute("height", Math.abs(yDisplacement) + offset*2);
 			svg.setAttribute("style", "position: absolute; left: " + xpos + "px; top: " + ypos + "px");
+			svg.style.color = colour;
 
-			const line = this.drawLine(coords, colour, stroke, dashes, title);
+			const line = this.drawLine(coords, stroke, dashes, title);
 			//debugging
 			line.setAttribute("data-coords", `[ ${start.x}, ${start.y} ], [ ${end.x}, ${end.y} ]`);
 			svg.append(line);
 			
-			svg = this._addMarker(svg, markers[0], "start", coords, stroke, colour);
-			svg = this._addMarker(svg, markers[1], "end", coords, stroke, colour);
+			svg = this._addMarker(svg, markers[0], "start", coords, stroke);
+			svg = this._addMarker(svg, markers[1], "end", coords, stroke);
 
 			return svg;
 		}
@@ -109,15 +110,14 @@
 		 * @param {string} pos
 		 * @param {object} coords
 		 * @param {number} stroke
-		 * @param {string} colour
 		 * @return {object|null}
 		 */
-		static _addMarker(svg, type, pos, coords, stroke, colour) {
-			if (type == "circle") svg.append(this._drawCircleMarker(pos, coords, stroke, colour));
-			if (type == "square") svg.append(this._drawSquareMarker(pos, coords, stroke, colour));
+		static _addMarker(svg, type, pos, coords, stroke) {
+			if (type == "circle") svg.append(this._drawCircleMarker(pos, coords, stroke));
+			if (type == "square") svg.append(this._drawSquareMarker(pos, coords, stroke));
 			if (type == "dots" && pos == "end") {
 				svg.setAttribute("width", parseInt(svg.getAttribute("width")) + stroke*2);
-				svg.append(this._drawDotsEnd(coords, stroke, colour));
+				svg.append(this._drawDotsEnd(coords, stroke));
 			}
 			return svg;
 		}
@@ -127,13 +127,12 @@
 		 * @param {string} pos - Either "start" or "end"
 		 * @param {object} coords - the four coords of the line
 		 * @param {number} stroke - the stroke width
-		 * @param {string} colour - the drawing colour
 		 * @return {object}
 		 */
-		static _drawSquareMarker(pos, coords, stroke, colour) {
+		static _drawSquareMarker(pos, coords, stroke) {
 			let [x, y] = [coords.x1 - stroke, coords.y1 - stroke];
 			if (pos == "end") [x, y] = [coords.x2 - stroke, coords.y2 - stroke];
-			return this.drawSquare(x, y, stroke * 2.5, colour);
+			return this.drawSquare(x, y, stroke * 2.5);
 		}
 		
 		/**
@@ -141,13 +140,12 @@
 		 * @param {string} pos - Either "start" or "end"
 		 * @param {object} coords - the four coords of the line
 		 * @param {number} stroke - the stroke width
-		 * @param {string} colour - the drawing colour
 		 * @return {object}
 		 */
-		static _drawCircleMarker(pos, coords, stroke, colour) {
+		static _drawCircleMarker(pos, coords, stroke) {
 			let [x, y] = [coords.x1, coords.y1];
 			if (pos == "end") [x, y] = [coords.x2, coords.y2];
-			return this.drawCircle(x, y, stroke, colour);
+			return this.drawCircle(x, y, stroke);
 		}
 		
 		/**
@@ -155,10 +153,9 @@
 		 * (Note - requires full line coords, because marker has direction)
 		 * @param {object} coords - the 4 coords of the line being marked
 		 * @param {number} stroke - the stroke width of the line
-		 * @param {string} colour - the drawing colour.
 		 * @return {object}
 		 */
-		static _drawDotsEnd(coords, stroke, colour) {
+		static _drawDotsEnd(coords, stroke) {
 			
 			let x2 = coords.x2;
 			if (coords.x2 < coords.x1) {
@@ -182,7 +179,7 @@
 				x2: x2,
 				y2: y2
 			};
-			return this.drawLine(dotCoords, colour, stroke, `0 ${stroke} ${stroke} ${stroke} ${stroke}`);
+			return this.drawLine(dotCoords, stroke, `0 ${stroke} ${stroke} ${stroke} ${stroke}`);
 		}
 		
 		/**
@@ -192,22 +189,21 @@
 		 * @param {number} coords.y1
 		 * @param {number} coords.x2
 		 * @param {number} coords.y2
-		 * @param {string} colour - The colour of the line. Must be a valid hex colour.
 		 * @param {number} width - The width in px of the line
 		 * @param {string} [dashes] - The dasharray pattern of the line. If omitted, it will be solid.
 		 * 		Must be a valid SVG dasharray (@see {@link https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray})
 		 * @param {String} [title] - If included, a title element will be included with the given text.
 		 * @return {object}
 		 */
-		static drawLine(coords, colour, width, dashes = "", title = "") {
+		static drawLine(coords, width, dashes = "", title = "") {
 			const line = document.createElementNS(svgns, "line");
 			line.setAttribute("x1", coords.x1);
 			line.setAttribute("y1", coords.y1);
 			line.setAttribute("x2", coords.x2);
 			line.setAttribute("y2", coords.y2);
-			line.setAttribute("stroke", colour);
 			line.setAttribute("stroke-width", width);
 			line.setAttribute("stroke-dasharray",dashes);
+			line.setAttribute("stroke", "currentColor");
 			
 			if(title) {
 				line.append(this._createTitle(title));
@@ -220,16 +216,15 @@
 		 * @param {number} cx - The X coordinate of the circle centre
 		 * @param {number} cy - The Y coordinate of the circle centre
 		 * @param {number} r - The radius in px of the circle
-		 * @param {string} colour - The colour of the circle. Must be a valid hex colour.
 		 * @param {String} [title] - If included, a title element will be included with the given text.
 		 * @return {object}
 		 */
-		static drawCircle(cx, cy, r, colour, title = "") {
+		static drawCircle(cx, cy, r, title = "") {
 			const circle = document.createElementNS(svgns, "circle");
 			circle.setAttribute("cx", cx);
 			circle.setAttribute("cy", cy);
 			circle.setAttribute("r", r);
-			circle.setAttribute("fill", colour);
+			circle.setAttribute("fill", "currentColor");
 			
 			if(title) {
 				circle.append(this._createTitle(title));
@@ -243,17 +238,16 @@
 		 * @param {number} x - The X coordinate
 		 * @param {number} y - The y coordinate
 		 * @param {number} w - The width of the square
-		 * @param {string} colour - The colour of the square. Must be a valid hex colour
 		 * @param {String} [title] - If included, a title element will be included with the given text.
 		 * @return {object}
 		 */
-		static drawSquare(x, y, w, colour, title = "") {
+		static drawSquare(x, y, w, title = "") {
 			const square = document.createElementNS(svgns, "rect");
 			square.setAttribute("x", x);
 			square.setAttribute("y", y);
 			square.setAttribute("width", w);
 			square.setAttribute("height", w);
-			square.setAttribute("fill", colour);
+			square.setAttribute("fill", "currentColor");
 			
 			if(title) {
 				square.append(this._createTitle(title));
@@ -581,7 +575,6 @@
 		yearWidth: 50,
 		rowHeight: 50,
 		padding: 5,
-		strokeColour: "#999",
 		boxWidth: 100,
 		guides: true,
 		guideInterval: 5,
@@ -606,7 +599,6 @@
 		 * @param {number} [config.yearWidth = 50] - the width in px of diagram used to for each year
 		 * @param {number} [config.rowHeight = 50] - the height in px of each diagram row
 		 * @param {number} [config.padding = 5] - the padding in px between rows
-		 * @param {string} [config.strokeColour = "#999"] - the default colour for lines drawn (must be a valid colour hex)
 		 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 		 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 		 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
@@ -796,7 +788,7 @@
 		_draw() {
 			for (const entry of this._entries) {
 				
-				const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
+				const colour = (entry.dataset.colour ? entry.dataset.colour : "var(--tl-colour-stroke)");
 				const dasharray = (entry.dataset.irregular == "true" ? this._config.irregularDashes : "");
 				
 				let endMarker = "";
@@ -1001,14 +993,12 @@
 		 */
 		_applyCSSProperties() {
 			const root = document.documentElement;
-			root.style.setProperty('--timeline-year-width', this._config.yearWidth + "px");
-			root.style.setProperty('--timeline-row-height', this._config.rowHeight + "px");
-			root.style.setProperty('--timeline-box-width', this._config.boxWidth + "px");
-			root.style.setProperty('--timeline-box-height', this._config.boxHeight + "px");
-			root.style.setProperty('--timeline-box-width-min', this._config.boxHeight + "px");
-			root.style.setProperty('--timeline-padding', this._config.padding + "px");
-			root.style.setProperty('--timeline-stroke-colour', this._config.strokeColour);
-			
+			root.style.setProperty('--tl-width-year', this._config.yearWidth + "px");
+			root.style.setProperty('--tl-height-row', this._config.rowHeight + "px");
+			root.style.setProperty('--tl-width-box', this._config.boxWidth + "px");
+			root.style.setProperty('--tl-height-box', this._config.boxHeight + "px");
+			root.style.setProperty('--tl-width-box-min', this._config.boxHeight + "px");
+			root.style.setProperty('--tl-padding', this._config.padding + "px");
 		}
 		
 		/**
@@ -1179,7 +1169,6 @@
 		 * @param {number} [config.yearWidth = 50] - the width in px of diagram used for each year
 		 * @param {number} [config.rowHeight = 50] - the height in px of each diagram row
 		 * @param {number} [config.padding = 5] - the padding in px between rows
-		 * @param {string} [config.strokeColour = #999] - the default colour for lines drawn (must be a valid colour hex)
 		 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 		 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 		 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
@@ -1192,6 +1181,7 @@
 		
 		/**
 		 * Create the Timeline. This should be called after instantiation.
+		 * @public
 		 */
 		create() {
 			const d = new Diagram(this._container, this._diagramConfig);
@@ -1211,7 +1201,7 @@
 		
 		/**
 		 * Take the provided config, separate config for the Diagram drawing class, and add in defaults for undefined properties.
-		 * @private
+		 * @protected
 		 * @param {object} config
 		 */
 		_setConfig(config) {
@@ -1221,6 +1211,7 @@
 		
 		/**
 		 * If Panzoom is enabled, pan to the element with the given ID, and reset the zoom.
+		 * @public
 		 * @param {string} id - The ID of a timeline entry
 		 * @fires Timeline#timelineFind
 		 */
@@ -1247,9 +1238,10 @@
 		}
 		
 		/**
-		 * timelineFind event.
+		 * The timelineFind event is fired when panToEntry() is called. (Only applicable if Panzoom is enabled).
 		 * @event Timeline#timelineFind
 		 * @type {object}
+		 * @public
 		 * @property {object} details
 		 * @property {string} details.id - the ID of the entry
 		 * @property {string} details.name - the name of the entry
@@ -1258,7 +1250,7 @@
 		/**
 		 * Bind the zoom controls to the configured element IDs, if present in the document.
 		 * Prepare empty container for entry filter if find form is present.
-		 * @private
+		 * @protected
 		 */
 		_initControls() {
 			const zoomIn = document.getElementById(this._config.zoomIn);
@@ -1276,7 +1268,7 @@
 		
 		/**
 		 * Set up the find form
-		 * @private
+		 * @protected
 		 */
 		_initFindForm(form) {
 			//Add the ID input
@@ -1322,7 +1314,7 @@
 		
 		/**
 		 * Add entries to the "#filtered-entries", filtered by the value of the event-triggering input.
-		 * @private
+		 * @protected
 		 * @param {object} e
 		 */
 		_showEntryOptions(e) {
@@ -1346,7 +1338,7 @@
 		
 		/**
 		 * Filter the list of entries to match the provided search string.
-		 * @private
+		 * @protected
 		 * @param {string} search
 		 * @return {array}
 		 */
@@ -1363,7 +1355,7 @@
 		
 		/**
 		 * Submit the clicked entry in the filtered list.
-		 * @private
+		 * @protected
 		 * @param {object} e
 		 */
 		_selectFilteredEntry(e) {
@@ -1382,7 +1374,7 @@
 		/**
 		 * The submit action of the find form.
 		 * Pan to the entry with submitted ID, if it exists.
-		 * @private
+		 * @protected
 		 * @param {object} e
 		 * @fires Timeline#timelineFind
 		 */
@@ -1400,7 +1392,7 @@
 		
 		/** 
 		 * Initialised Panzoom on the diagram.
-		 * @private
+		 * @protected
 		 * @throws {Error} Will throw an error if Panzoom isn't found.
 		 */
 		_initPanzoom() {
@@ -1429,7 +1421,7 @@
 		
 		/**
 		 * Handle URL hash. Hash of format '#find-{ID}' will pan to the given entry ID, if it exists.
-		 * @private
+		 * @protected
 		 * @param {object} e
 		 */
 		_hashHandler(e) {
@@ -1440,4 +1432,4 @@
 
 	return Timeline;
 
-})));
+}));

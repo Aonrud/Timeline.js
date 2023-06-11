@@ -4,12 +4,14 @@
   "type": "module",
   "description": "Draw a timeline diagram.",
   "main": "dist/timeline.js",
+  "type": "module",
   "scripts": {
-    "build": "npm-run-all css js",
+    "build": "npm-run-all css js docs",
     "js": "rollup -c",
     "css": "npm-run-all css-*",
-    "css-compile": "sass --style expanded src/timeline.scss > dist/timeline.css",
-    "css-min": "sass --style compressed src/timeline.scss > dist/timeline.min.css"
+    "css-compile": "sass --style expanded src/timeline.scss > dist/timeline.css && sass --style expanded src/timeline-dark.scss > dist/timeline-dark.css",
+    "css-min": "sass --style compressed src/timeline.scss > dist/timeline.min.css && sass --style compressed src/timeline-dark.scss > dist/timeline-dark.min.css",
+    "docs": "jsdoc2md -d 3 -t README.hbs src/Timeline.js  > README.md"
   },
   "keywords": [],
   "author": "Aonghus Storey",
@@ -17,6 +19,7 @@
   "devDependencies": {
     "@panzoom/panzoom": "^4.4.1",
     "@rollup/plugin-terser": "^0.4.0",
+    "jsdoc-to-markdown": "^8.0.0",
     "npm-run-all": "^4.1.5",
     "rollup": "^3.18.0"
   },
