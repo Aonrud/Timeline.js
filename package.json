@@ -5,7 +5,7 @@
   "main": "dist/timeline.js",
   "type": "module",
   "scripts": {
-    "build": "npm-run-all css js",
+    "build": "npm-run-all css js docs",
     "js": "rollup -c",
     "css": "npm-run-all css-*",
     "css-compile": "sass --style expanded src/timeline.scss > dist/timeline.css && sass --style expanded src/timeline-dark.scss > dist/timeline-dark.css",
@@ -17,6 +17,7 @@
   "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@panzoom/panzoom": "^4.4.1",
+    "jsdoc-to-markdown": "^8.0.0",
     "npm-run-all": "^4.1.5",
     "rollup": "^2.53.3",
     "rollup-plugin-terser": "^7.0.2"

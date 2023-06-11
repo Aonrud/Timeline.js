@@ -129,7 +129,7 @@ Buttons can be added to control 'zoom in', 'zoom out' and 'reset zoom' with spec
 
 ### Finding on load with URL hash
 
-If a URL hash is present on load and Panzoom is enabled, the timeline will pan to and highlight a given entry automatically if the hash is in the format '#find-{id}'.
+If a URL hash is present on load and Panzoom is enabled, the timeline will pan to and highlight a given entry automatically if the hash is in the format `#find-{id}`.
 
 ### Example
 
@@ -166,79 +166,30 @@ The row is determined in source-code order for each entry if it is omitted. A ro
 
 ## Javascript Documentation
 
-<a name="Timeline"></a>
+{{#classes}}
+{{>header~}}
+{{>body}}
+{{!--  The constructor doesn't get listed in public children, and access undefined doesn't seem to work, so add it manually--}}
+{{>index-indent}}* {{>sig-link-parent}}
+{{#indexChildren kind="constructor" ~}}
+{{>member-index-list~}}
+{{/indexChildren}}
+{{#indexChildren inherited=undefined access="public" ~}}
+{{>member-index-list~}}
+{{/indexChildren}}
 
-### Timeline
-The class representing the Timeline.  This is the point of access to this tool.
-The simplest usage is to instantiate a new Timeline object, and then call the create() method.
+{{>separator~}}
+{{#children kind="constructor" ~}}
+{{>docs~}}
+{{/children~}}
+{{#children inherited=undefined access="public" ~}}
+{{>docs~}}
+{{/children~}}
+{{/classes}}
 
-**Kind**: global class  
-* [Timeline](#Timeline)
-    * [new Timeline([container], [config])](#new_Timeline_new)
-    * [timeline.create()](#Timeline+create)
-    * [timeline.panToEntry(id)](#Timeline+panToEntry)
-    * ["timelineFind"](#Timeline+event_timelineFind)
-
-<a name="new_Timeline_new"></a>
-
-#### new Timeline([container], [config])
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [container] | <code>string</code> | <code>&quot;diagram&quot;</code> | The ID of the container element for the timeline. |
-| [config] | <code>object</code> |  | All config for the timeline |
-| [config.panzoom] | <code>boolean</code> | <code>false</code> | Whether to apply panning and zooming feature to the timeline. |
-| [config.findForm] | <code>string</code> | <code>&quot;timeline-find&quot;</code> | The ID of the find form |
-| [config.zoomIn] | <code>string</code> | <code>&quot;timeline-zoom-in&quot;</code> | The ID of the button to zoom in |
-| [config.zoomOut] | <code>string</code> | <code>&quot;timeline-zoom-out&quot;</code> | The ID of the button to zoom out |
-| [config.zoomReset] | <code>string</code> | <code>&quot;timeline-zoom-reset&quot;</code> | The ID of the button to reset the zoom level |
-| [config.yearStart] | <code>number</code> | <code>1900</code> | the starting year for the timeline |
-| [config.yearEnd] | <code>number</code> | <code>Current year + 1</code> | the end year for the timeline |
-| [config.strokeWidth] | <code>number</code> | <code>4</code> | the width in px of the joining lines |
-| [config.yearWidth] | <code>number</code> | <code>50</code> | the width in px of diagram used for each year |
-| [config.rowHeight] | <code>number</code> | <code>50</code> | the height in px of each diagram row |
-| [config.padding] | <code>number</code> | <code>5</code> | the padding in px between rows |
-| [config.boxWidth] | <code>number</code> | <code>100</code> | the width in px of each entry |
-| [config.guides] | <code>boolean</code> | <code>true</code> | whether to draw striped guides at regular intervals in the timeline |
-| [config.guideInterval] | <code>number</code> | <code>5</code> | the interval in years between guides (ignored if 'guides' is false) |
-| [config.entrySelector] | <code>string</code> | <code>&quot;div&quot;</code> | the CSS selector used for entries |
-
-<a name="Timeline+create"></a>
-
-#### timeline.create()
-Create the Timeline. This should be called after instantiation.
-
-**Kind**: instance method of [<code>Timeline</code>](#Timeline)  
-**Access**: public  
-<a name="Timeline+panToEntry"></a>
-
-#### timeline.panToEntry(id)
-If Panzoom is enabled, pan to the element with the given ID, and reset the zoom.
-
-**Kind**: instance method of [<code>Timeline</code>](#Timeline)  
-**Emits**: [<code>timelineFind</code>](#Timeline+event_timelineFind)  
-**Access**: public  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| id | <code>string</code> | The ID of a timeline entry |
-
-<a name="Timeline+event_timelineFind"></a>
-
-#### "timelineFind"
-The timelineFind event is fired when panToEntry() is called. (Only applicable if Panzoom is enabled).
-
-**Kind**: event emitted by [<code>Timeline</code>](#Timeline)  
-**Access**: public  
-**Properties**
-
-| Name | Type | Description |
-| --- | --- | --- |
-| details | <code>object</code> |  |
-| details.id | <code>string</code> | the ID of the entry |
-| details.name | <code>string</code> | the name of the entry |
-
-
+{{#globals kind="event"}}
+{{>docs~}}
+{{/globals}}
 
 * * *
 
