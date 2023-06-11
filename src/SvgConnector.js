@@ -18,7 +18,7 @@ class SvgConnector {
 	 * @param {number} settings.end.x
 	 * @param {number} settings.end.y
 	 * @param {string} settings.stroke - The stroke width in px of the line
-	 * @param {string} settings.colour - The colour of the line. Must be a valid hex colour.
+	 * @param {string} settings.colour - The colour of the line. Will be set on the SVG element and inherited, so can be e.g. a CSS var().
 	 * @param {array.<string>} [settings.markers] - An array of two string values indicating the start and end markers respectively.
 	 * 		Valid values are "circle", "square" and "dots" (the last can only be used for end).
 	 * @param {string} [settings.dashes] - A dasharray string for the SVG line. If omitted, a solid line will be used.
@@ -68,16 +68,17 @@ class SvgConnector {
 		svg.setAttribute("width", Math.abs(xDisplacement) + offset*2);
 		svg.setAttribute("height", Math.abs(yDisplacement) + offset*2);
 		svg.setAttribute("style", "position: absolute; left: " + xpos + "px; top: " + ypos + "px");
+		svg.style.color = colour;
 
-		const line = this.drawLine(coords, colour, stroke, dashes, title);
+		const line = this.drawLine(coords, stroke, dashes, title);
 		//debugging
 		line.setAttribute("data-coords", `[ ${start.x}, ${start.y}], [ ${end.x}, ${end.y} ]`);
 		svg.append(line);
 		
-		const markerStart = this._drawMarker(markers[0], "start", coords, stroke, colour);
+		const markerStart = this._drawMarker(markers[0], "start", coords, stroke);
 		if (markerStart) svg.append(markerStart);
 		
-		const markerEnd = this._drawMarker(markers[1], "end", coords, stroke, colour);
+		const markerEnd = this._drawMarker(markers[1], "end", coords, stroke);
 		if (markerEnd) svg.append(markerEnd);
 
 		return svg;
@@ -89,13 +90,12 @@ class SvgConnector {
 	 * @param {string} pos
 	 * @param {object} coords
 	 * @param {number} stroke
-	 * @param {string} colour
 	 * @return {object|null}
 	 */
-	static _drawMarker(type, pos, coords, stroke, colour) {
-		if (type == "circle") return this._drawCircleMarker(pos, coords, stroke, colour);
-		if (type == "square") return this._drawSquareMarker(pos, coords, stroke, colour);
-		if (type == "dots" && pos == "end") return this._drawDotsEnd(coords, stroke, colour);
+	static _drawMarker(type, pos, coords, stroke) {
+		if (type == "circle") return this._drawCircleMarker(pos, coords, stroke);
+		if (type == "square") return this._drawSquareMarker(pos, coords, stroke);
+		if (type == "dots" && pos == "end") return this._drawDotsEnd(coords, stroke);
 		return;
 	}
 	
@@ -104,13 +104,12 @@ class SvgConnector {
 	 * @param {string} pos - Either "start" or "end"
 	 * @param {object} coords - the four coords of the line
 	 * @param {number} stroke - the stroke width
-	 * @param {string} colour - the drawing colour
 	 * @return {object}
 	 */
-	static _drawSquareMarker(pos, coords, stroke, colour) {
+	static _drawSquareMarker(pos, coords, stroke) {
 		let [x, y] = [coords.x1 - stroke, coords.y1 - stroke];
 		if (pos = "end") [x, y] = [coords.x2 - stroke, coords.y2 - stroke];
-		return this.drawSquare(x, y, stroke * 2.5, colour);
+		return this.drawSquare(x, y, stroke * 2.5);
 	}
 	
 	/**
@@ -118,13 +117,12 @@ class SvgConnector {
 	 * @param {string} pos - Either "start" or "end"
 	 * @param {object} coords - the four coords of the line
 	 * @param {number} stroke - the stroke width
-	 * @param {string} colour - the drawing colour
 	 * @return {object}
 	 */
-	static _drawCircleMarker(pos, coords, stroke, colour) {
+	static _drawCircleMarker(pos, coords, stroke) {
 		let [x, y] = [coords.x1, coords.y1];
 		if (pos = "end") [x, y] = [coords.x2, coords.y2];
-		return this.drawCircle(x, y, stroke, colour);
+		return this.drawCircle(x, y, stroke);
 	}
 	
 	/**
@@ -132,10 +130,9 @@ class SvgConnector {
 	 * (Note - requires full line coords, because marker has direction)
 	 * @param {object} coords - the 4 coords of the line being marked
 	 * @param {number} stroke - the stroke width of the line
-	 * @param {string} colour - the drawing colour.
 	 * @return {object}
 	 */
-	static _drawDotsEnd(coords, stroke, colour) {
+	static _drawDotsEnd(coords, stroke) {
 		
 		let x2 = coords.x2;
 		if (coords.x2 < coords.x1) {
@@ -159,7 +156,7 @@ class SvgConnector {
 			x2: x2,
 			y2: y2
 		}
-		return this.drawLine(dotCoords, colour, stroke*2, "2 2");
+		return this.drawLine(dotCoords, stroke*2, "2 2");
 	}
 	
 	/**
@@ -169,22 +166,21 @@ class SvgConnector {
 	 * @param {number} coords.y1
 	 * @param {number} coords.x2
 	 * @param {number} coords.y2
-	 * @param {string} colour - The colour of the line. Must be a valid hex colour.
 	 * @param {number} width - The width in px of the line
 	 * @param {string} [dashes] - The dasharray pattern of the line. If omitted, it will be solid.
 	 * 		Must be a valid SVG dasharray (@see {@link https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray})
 	 * @param {String} [title] - If included, a title element will be included with the given text.
 	 * @return {object}
 	 */
-	static drawLine(coords, colour, width, dashes = "", title = "") {
+	static drawLine(coords, width, dashes = "", title = "") {
 		const line = document.createElementNS(svgns, "line");
 		line.setAttribute("x1", coords.x1);
 		line.setAttribute("y1", coords.y1);
 		line.setAttribute("x2", coords.x2);
 		line.setAttribute("y2", coords.y2);
-		line.setAttribute("stroke", colour);
 		line.setAttribute("stroke-width", width);
 		line.setAttribute("stroke-dasharray",dashes);
+		line.setAttribute("stroke", "currentColor");
 		
 		if(title) {
 			line.append(this._createTitle(title));
@@ -197,16 +193,15 @@ class SvgConnector {
 	 * @param {number} cx - The X coordinate of the circle centre
 	 * @param {number} cy - The Y coordinate of the circle centre
 	 * @param {number} r - The radius in px of the circle
-	 * @param {string} colour - The colour of the circle. Must be a valid hex colour.
 	 * @param {String} [title] - If included, a title element will be included with the given text.
 	 * @return {object}
 	 */
-	static drawCircle(cx, cy, r, colour, title = "") {
+	static drawCircle(cx, cy, r, title = "") {
 		const circle = document.createElementNS(svgns, "circle");
 		circle.setAttribute("cx", cx);
 		circle.setAttribute("cy", cy);
 		circle.setAttribute("r", r);
-		circle.setAttribute("fill", colour);
+		circle.setAttribute("fill", "currentColor");
 		
 		if(title) {
 			circle.append(this._createTitle(title));
@@ -220,17 +215,16 @@ class SvgConnector {
 	 * @param {number} x - The X coordinate
 	 * @param {number} y - The y coordinate
 	 * @param {number} w - The width of the square
-	 * @param {string} colour - The colour of the square. Must be a valid hex colour
 	 * @param {String} [title] - If included, a title element will be included with the given text.
 	 * @return {object}
 	 */
-	static drawSquare(x, y, w, colour, title = "") {
+	static drawSquare(x, y, w, title = "") {
 		const square = document.createElementNS(svgns, "rect");
 		square.setAttribute("x", x);
 		square.setAttribute("y", y);
 		square.setAttribute("width", w);
 		square.setAttribute("height", w);
-		square.setAttribute("fill", colour);
+		square.setAttribute("fill", "currentColor");
 		
 		if(title) {
 			square.append(this._createTitle(title));

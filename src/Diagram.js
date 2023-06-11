@@ -12,7 +12,6 @@ const defaultDiagramConfig = {
 	yearWidth: 50,
 	rowHeight: 50,
 	padding: 5,
-	strokeColour: "#999",
 	boxWidth: 100,
 	guides: true,
 	guideInterval: 5,
@@ -37,7 +36,6 @@ class Diagram {
 	 * @param {number} [config.yearWidth = 50] - the width in px of diagram used to for each year
 	 * @param {number} [config.rowHeight = 50] - the height in px of each diagram row
 	 * @param {number} [config.padding = 5] - the padding in px between rows
-	 * @param {string} [config.strokeColour = "#999"] - the default colour for lines drawn (must be a valid colour hex)
 	 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
@@ -227,7 +225,7 @@ class Diagram {
 	_draw() {
 		for (const entry of this._entries) {
 			
-			const colour = (entry.dataset.colour ? entry.dataset.colour : this._config.strokeColour);
+			const colour = (entry.dataset.colour ? entry.dataset.colour : "var(--tl-colour-stroke)");
 			const dasharray = (entry.dataset.irregular == "true" ? this._config.irregularDashes : "");
 			
 			let endMarker = "";
@@ -432,14 +430,12 @@ class Diagram {
 	 */
 	_applyCSSProperties() {
 		const root = document.documentElement;
-		root.style.setProperty('--timeline-year-width', this._config.yearWidth + "px");
-		root.style.setProperty('--timeline-row-height', this._config.rowHeight + "px");
-		root.style.setProperty('--timeline-box-width', this._config.boxWidth + "px");
-		root.style.setProperty('--timeline-box-height', this._config.boxHeight + "px");
-		root.style.setProperty('--timeline-box-width-min', this._config.boxHeight + "px");
-		root.style.setProperty('--timeline-padding', this._config.padding + "px");
-		root.style.setProperty('--timeline-stroke-colour', this._config.strokeColour);
-		
+		root.style.setProperty('--tl-width-year', this._config.yearWidth + "px");
+		root.style.setProperty('--tl-height-row', this._config.rowHeight + "px");
+		root.style.setProperty('--tl-width-box', this._config.boxWidth + "px");
+		root.style.setProperty('--tl-height-box', this._config.boxHeight + "px");
+		root.style.setProperty('--tl-width-box-min', this._config.boxHeight + "px");
+		root.style.setProperty('--tl-padding', this._config.padding + "px");
 	}
 	
 	/**

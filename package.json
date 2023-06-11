@@ -3,12 +3,14 @@
   "version": "1.1.2",
   "description": "Draw a timeline diagram.",
   "main": "dist/timeline.js",
+  "type": "module",
   "scripts": {
     "build": "npm-run-all css js",
     "js": "rollup -c",
     "css": "npm-run-all css-*",
-    "css-compile": "sass --style expanded src/timeline.scss > dist/timeline.css",
-    "css-min": "sass --style compressed src/timeline.scss > dist/timeline.min.css"
+    "css-compile": "sass --style expanded src/timeline.scss > dist/timeline.css && sass --style expanded src/timeline-dark.scss > dist/timeline-dark.css",
+    "css-min": "sass --style compressed src/timeline.scss > dist/timeline.min.css && sass --style compressed src/timeline-dark.scss > dist/timeline-dark.min.css",
+    "docs": "jsdoc2md -d 3 -t README.hbs src/Timeline.js  > README.md"
   },
   "keywords": [],
   "author": "Aonghus Storey",

@@ -53,7 +53,6 @@ class Timeline {
 	 * @param {number} [config.yearWidth = 50] - the width in px of diagram used for each year
 	 * @param {number} [config.rowHeight = 50] - the height in px of each diagram row
 	 * @param {number} [config.padding = 5] - the padding in px between rows
-	 * @param {string} [config.strokeColour = #999] - the default colour for lines drawn (must be a valid colour hex)
 	 * @param {number} [config.boxWidth = 100] - the width in px of each entry
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
