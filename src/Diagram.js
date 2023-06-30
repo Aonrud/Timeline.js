@@ -316,6 +316,7 @@ class Diagram {
 	/**
 	 * Draw forks.
 	 * @protected
+	 * @deprecated
 	 * @param {HTMLElement} entry
 	 * @param {string} colour
 	 */

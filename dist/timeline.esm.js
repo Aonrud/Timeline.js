@@ -847,6 +847,7 @@ class Diagram {
 	/**
 	 * Draw splits.
 	 * @protected
+	 * @deprecated
 	 * @param {HTMLElement} entry
 	 * @param {string} colour
 	 */

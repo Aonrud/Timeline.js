@@ -67,7 +67,7 @@ The following data attributes then determine the position and connections of the
 |data-become|No|Another entry ID|The entry 'becomes' another entry. I.e. another entry is the continuation of this entry, and it will be drawn on the same line.  For example, use this when an entry changes its name.|
 |data-split|No|Another entry ID|If specified, the entry will be shown branching from the specified entry, at the year specified in 'data-start'.|
 |data-merge|No|Another entry ID|If specified, the entry will be connected to the specified entry, at the year specified in 'data-end'.|
-|data-fork|No|Two space-separated entry IDs|If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
+|data-fork|No|Two space-separated entry IDs|***Deprecated:** This will be removed in a future version. The same outcome can be created with split.* If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
 |data-colour|No|A CSS colour hex|The colour of the border around the entry and connections from it. |
 |data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
