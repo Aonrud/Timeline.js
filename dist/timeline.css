@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :root {
   --tl-colour-background: #fff;
   --tl-colour-border: #ccc;
@@ -88,6 +89,22 @@
   height: auto;
   border-radius: 3px;
   color: var(--tl-colour-text);
+}
+.entry.preexists {
+  padding-left: 1.2em;
+}
+.entry.preexists:before {
+  display: block;
+  position: absolute;
+  top: 2px;
+  left: 0;
+  content: "◀";
+  color: var(--tl-colour-entry);
+  height: 100%;
+  margin: -2px 0 0 -2px;
+  background: var(--tl-colour-border);
+  padding-top: 0.5em;
+  width: 1.2em;
 }
 
 .timeline-container {

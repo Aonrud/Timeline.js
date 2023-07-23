@@ -675,6 +675,12 @@
 			for (const entry of this._entries) {
 				entry.classList.add("entry");
 				entry.dataset.end = this._calcEnd(entry);
+				
+				//If start is before Timeline start, then move it and add a class.
+				if (parseInt(entry.dataset.start) < this._config.yearStart) {
+					entry.classList.add("preexists");
+					entry.dataset.start = this._config.yearStart;
+				}
 			}
 		}
 		
@@ -853,7 +859,6 @@
 		/**
 		 * Draw splits.
 		 * @protected
-		 * @deprecated
 		 * @param {HTMLElement} entry
 		 * @param {string} colour
 		 */
@@ -880,6 +885,7 @@
 		/**
 		 * Draw forks.
 		 * @protected
+		 * @deprecated
 		 * @param {HTMLElement} entry
 		 * @param {string} colour
 		 */
