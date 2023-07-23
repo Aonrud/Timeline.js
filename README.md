@@ -60,8 +60,8 @@ The following data attributes then determine the position and connections of the
 
 |Attribute	|Required	|Value	|Use	|
 |-----------|-----------|-------|-------|
-|data-start|Yes|`<number>` A year|The year the entry starts at in the timeline|
-|data-end|No|`<number>` A year|The year the entry ends. If omitted, this will be determined either by other connections, or if there are none, it will continue to the end of the timeline|
+|data-start|Yes|`<number>` A year|The year the entry starts at in the timeline. <br /> *Note: If this is earlier than the start of the timeline itself, an arrow is added to indicate it pre-exists the period shown.*|
+|data-end|No|`<number>` A year|The year the entry ends. If omitted, this will be determined either by other connections, or if there are none, it will continue to the end of the timeline.|
 |data-row|No|`<number>`| *Note: The first row is '0'*. <br />The row number this entry should appear in. This can be omitted, though automatic positioning is quite basic. It is recommended to use manual positioning or a combination of both for large or complex diagrams (see [Entry Positioning](#entry-positioning) below).|
 |data-end-estimate|No|true or false|Whether the end is an estimate. Estimated end times are shown with a dashed end to the line, instead of a point.|
 |data-become|No|Another entry ID|The entry 'becomes' another entry. I.e. another entry is the continuation of this entry, and it will be drawn on the same line.  For example, use this when an entry changes its name.|
@@ -154,7 +154,7 @@ The provided classes will position the controls in a box in the bottom right cor
 
 ## Entry Positioning
 
-The X axis position of each entry must be manually set by specifing the 'data-start' attribute.  The extent of the entry along the timeline is determined either by the 'data-end' attribute, or extends to the end of the timeline.
+The X axis position of each entry must be manually set by specifing the 'data-start' attribute [^1].  The extent of the entry along the timeline is determined either by the 'data-end' attribute, or extends to the end of the timeline.
 
 Specifying the row manually for each entry is not required. However, only some basic tests are performed to choose a suitable row for each entry when it is not specified, so aside from simple examples, it is recommended to manually set 'data-row' at least on a proportion of entries and those with complex links to ensure a sensible layout.
 
@@ -163,6 +163,8 @@ The row is determined in source-code order for each entry if it is omitted. A ro
 * Available space, starting from the first row until a space is found.
 * Connected entries (via 'data-becomes' attribute) must be on the same row.
 * Split, merge, and fork entries should aim to be as close to their linked entries as possible, depending on nearest available row with space.
+
+[^1]: If `data-start` is before the configured start of the timeline, it will be shown at the start with an arrow indicating it pre-exists the period shown.
 
 ## Javascript Documentation
 
