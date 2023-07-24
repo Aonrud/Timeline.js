@@ -1,6 +1,6 @@
 /**
  * Calculates an available position for diagram entries which have not had their row (Y-axis position) set manually.
- * This is fairly rudamentary - a row with sufficient empty space for each entry (and any it joins directly with) will be calculated.
+ * This is fairly rudimentary - a row with sufficient empty space for each entry (and any it joins directly with) will be calculated.
  * If the entry splits from, merges with, or forks into other entries, the nearest row to those entries will be sought.
  * This is most effectively used in a hybrid form, using some manual positioning, allowing simpler cases to be positioned automatically.
  */

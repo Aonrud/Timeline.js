@@ -84,7 +84,7 @@ Entries can also be added using an array of objects when creating the Timeline, 
 
 Each entry must have at least `id`, `name` and `start` properties. The `name` is the displayed name of the entry (determined by the inner text of the element when defining entries in HTML).
 
-All [attributes available as data attributes descirbed above](#html) can be defined as object properties, with the omission of the data prefix and the object key named as it would be when converted from a data attribute to a property of the element's `dataset`. ([See the MDN entry for this conversion](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset#name_conversion)).
+All [attributes available as data attributes described above](#html) can be defined as object properties, with the omission of the data prefix and the object key named as it would be when converted from a data attribute to a property of the element's `dataset`. ([See the MDN entry for this conversion](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset#name_conversion)).
 
 For example:
 
