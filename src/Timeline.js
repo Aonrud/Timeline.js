@@ -26,7 +26,7 @@ import {applyConfig} from './util.js';
  * The default configuration object for the Timeline
  */
 const defaultTimelineConfig = {
-	panzoom: false,
+	panzoom: null,
 	findForm: "timeline-find",
 	zoomIn: "timeline-zoom-in",
 	zoomOut: "timeline-zoom-out",
@@ -42,7 +42,7 @@ class Timeline {
 	/**
 	 * @param {string} [container = diagram] - The ID of the container element for the timeline.
 	 * @param {object} [config] - All config for the timeline
-	 * @param {boolean} [config.panzoom = false] - Whether to apply panning and zooming feature to the timeline.
+	 * @param {(function|null)} [config.panzoom = null] - The Panzoom function to enable panning and zooming, or null to disable
 	 * @param {string} [config.findForm = timeline-find] - The ID of the find form
 	 * @param {string} [config.zoomIn = timeline-zoom-in] - The ID of the button to zoom in
 	 * @param {string} [config.zoomOut = timeline-zoom-out] - The ID of the button to zoom out
@@ -76,7 +76,7 @@ class Timeline {
 		const d = new Diagram(this._container, this._diagramConfig);
 		this._diagram = d.create();
 
-		if (this._config.panzoom === true) {
+		if (typeof this._config.panzoom === "function") {
 			this._initPanzoom();
 			this._initControls();
 			window.addEventListener('hashchange', (e) => this._hashHandler(e));
@@ -307,19 +307,14 @@ class Timeline {
 	/** 
 	 * Initialised Panzoom on the diagram.
 	 * @protected
-	 * @throws {Error} Will throw an error if Panzoom isn't found.
 	 */
 	_initPanzoom() {
-		if (typeof Panzoom === "undefined") {
-			throw new Error("Missing dependency. External Panzoom library (@panzoom/panzoom) is required to use the panzoom feature.");
-		}
-		
 		const wrap = document.createElement("div");
 		wrap.classList.add("pz-wrap");
 		this._diagram.parentNode.insertBefore(wrap, this._diagram);
 		wrap.appendChild(this._diagram);
 		
-		this._pz = Panzoom(this._diagram, {
+		this._pz = this._config.panzoom(this._diagram, {
 			contain: 'outside',
 			maxScale: 3,
 			minScale: 0.5,
