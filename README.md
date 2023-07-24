@@ -145,7 +145,7 @@ Alternatively, add your own preferences within a `prefers-color-scheme: dark` me
 
 ## Panning and Zooming
 
-For large diagrams, Timeline can make use of [@panzoom/panzoom](https://github.com/timmywil/panzoom) to add panning and zooming to the diagram within a fixed container. Include `@panzoom/panzoom` in your dependencies (it is not bundled), and pass `panzoom: true` in the config when instantiating the timeline (see [Javascript Options](#javascript) below).
+For large diagrams, Timeline can make use of [@panzoom/panzoom](https://github.com/timmywil/panzoom) to add panning and zooming to the diagram within a fixed container. Include `@panzoom/panzoom` in your dependencies (it is not bundled), and pass the panzoom function in the config when instantiating the timeline (see [Javascript Options](#javascript) below).
 
 ## Controls and searching
 
@@ -222,7 +222,7 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 | --- | --- | --- | --- |
 | [container] | <code>string</code> | <code>&quot;diagram&quot;</code> | The ID of the container element for the timeline. |
 | [config] | <code>object</code> |  | All config for the timeline |
-| [config.panzoom] | <code>boolean</code> | <code>false</code> | Whether to apply panning and zooming feature to the timeline. |
+| [config.panzoom] | <code>function</code> \| <code>null</code> | <code></code> | The Panzoom function to enable panning and zooming, or null to disable |
 | [config.findForm] | <code>string</code> | <code>&quot;timeline-find&quot;</code> | The ID of the find form |
 | [config.zoomIn] | <code>string</code> | <code>&quot;timeline-zoom-in&quot;</code> | The ID of the button to zoom in |
 | [config.zoomOut] | <code>string</code> | <code>&quot;timeline-zoom-out&quot;</code> | The ID of the button to zoom out |
