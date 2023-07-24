@@ -50,13 +50,19 @@ The script is bundled as an ES6 module ([`dist/timeline.esm.js`](dist/timeline.e
 
 The Timeline class and configuration [are documented below](#javascript-documentation).  Note that configuration is optional - any or none of the options can be passed in the config object. If specifying a config, you must also pass the container ID as the first parameter when creating the timeline.
 
-## HTML
+## Adding Entries
 
-Each entry in your timeline is placed within the `#diagram` div (by default, entries are `<div>` elements).
+Entries can be defined either in your HTML using `data` attributes, or passed as an array of Javascript objects when instantiating Timeline.js.
 
-**Each entry must have a unique ID**.
+Both methods can be combined, but any entry defined in JS that duplicates an existing `id` will be dropped and a warning sent in the console.
 
-The following data attributes then determine the position and connections of the entry.
+**Each entry must have a unique ID, which must be a valid value for the HTML `id` attribute (See [id on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id) for restrictions)**.
+
+### HTML
+
+To define entries in your HTML, create an element within the container and define its properties with the data attributes in the table below.
+
+By default, entries should be `<div>` elements and the container has the id `#diagram`, but both of these are configurable (see [the Javscript configuration below](#timeline)).
 
 |Attribute	|Required	|Value	|Use	|
 |-----------|-----------|-------|-------|
@@ -67,10 +73,37 @@ The following data attributes then determine the position and connections of the
 |data-become|No|Another entry ID|The entry 'becomes' another entry. I.e. another entry is the continuation of this entry, and it will be drawn on the same line.  For example, use this when an entry changes its name.|
 |data-split|No|Another entry ID|If specified, the entry will be shown branching from the specified entry, at the year specified in 'data-start'.|
 |data-merge|No|Another entry ID|If specified, the entry will be connected to the specified entry, at the year specified in 'data-end'.|
-|data-fork|No|Two space-separated entry IDs|***Deprecated:** This will be removed in a future version. The same outcome can be created with split.* If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
+|data-fork|No|Two space-separated entry IDs|***Deprecated:** This will be removed in a future version. The same outcome can be created with split.* <br /> If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
 |data-colour|No|A CSS colour hex|The colour of the border around the entry and connections from it. |
 |data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
+
+### Javascript 
+
+Entries can also be added using an array of objects when creating the Timeline, using an optional parameter.
+
+Each entry must have at least `id`, `name` and `start` properties. The `name` is the displayed name of the entry (determined by the inner text of the element when defining entries in HTML).
+
+All [attributes available as data attributes descirbed above](#html) can be defined as object properties, with the omission of the data prefix and the object key named as it would be when converted from a data attribute to a property of the element's `dataset`. ([See the MDN entry for this conversion](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset#name_conversion)).
+
+For example:
+
+```javascript
+const data = [
+	{ id: "A", name: "First entry", start: 1950, end: 1960, merge: "B" },
+	{ id: "B", name: "Second entry", start: 1955, end: 1981, endEstimate: true  },
+	…
+	{ id: "Z", name: "Final entry", start: 1940 }
+];
+
+const example = new Timeline(
+	"diagram",
+	{}, //Default configuration
+	data
+);
+
+example.create();
+```
 
 ## CSS Styling
 
@@ -204,7 +237,7 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 | [config.guides] | <code>boolean</code> | <code>true</code> | whether to draw striped guides at regular intervals in the timeline |
 | [config.guideInterval] | <code>number</code> | <code>5</code> | the interval in years between guides (ignored if 'guides' is false) |
 | [config.entrySelector] | <code>string</code> | <code>&quot;div&quot;</code> | the CSS selector used for entries |
-| [data] | <code>Array.&lt;object&gt;</code> \| <code>null</code> | <code>[]</code> | The Timeline entries in JSON |
+| [data] | <code>Array.&lt;object&gt;</code> | <code>[]</code> | The Timeline entries in JSON |
 
 <a name="Timeline+create"></a>
 
