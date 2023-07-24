@@ -675,6 +675,18 @@ class Diagram {
 				entry.classList.add("preexists");
 				entry.dataset.start = this._config.yearStart;
 			}
+			
+			//Validate all referenced IDs and warn if missing.
+			for (const attrib of [ "become", "split", "merge", "fork", "links" ]) {
+				if (entry.dataset.hasOwnProperty(attrib)) {
+					for (const id of entry.dataset[attrib].split(" ")) {
+						if (!document.getElementById(id)) {
+							console.warn(`${entry.id}: Given ${attrib} ID "${id}" doesn't exist. Ignoring.`);
+							delete entry.dataset[attrib];
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -926,11 +938,7 @@ class Diagram {
 		};
 		
 		for (const link of links) {
-			const target = document.getElementById(link);
-			if (!target) {
-				console.warn(`${entry.id} links to non-existant ID ${link}`);
-			}
-			
+			const target = document.getElementById(link);			
 			let sourceSide, targetSide, start = { x: 0, y: 0}, end = { x: 0, y: 0};
 			
 			const eRow = parseInt(entry.dataset.row);
