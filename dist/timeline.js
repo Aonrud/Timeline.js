@@ -1235,6 +1235,10 @@
 		 * @param {object} data
 		 */
 		addEntry(data) {
+			if (document.getElementById(data.id)) {
+				console.warn(`Invalid entry: ${data.id} already exists.`);
+				return;
+			}
 			if (![ "id", "name", "start" ].every((i) => data.hasOwnProperty(i))) {
 				console.warn(`Invalid entry: ${JSON.stringify(data)}. Entries must have at least id, name and start values.`);
 				return;

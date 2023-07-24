@@ -34,13 +34,17 @@
 					name: "R is added in Javascript",
 					start: 1980,
 					end: 1990,
-					merge: "L",
+					endEstimate: true,
 					split: "I"
 				},
 				{
 					id: "S",
 					name: "S won't be added due to missing start",
 					end: 1995
+				},
+				{
+					id: "A",
+					name: "Won't be added due to ID clash"
 				}
 			]
 			const t = new Timeline("diagram", { yearStart: 1970 }, data);

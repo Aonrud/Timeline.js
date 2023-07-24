@@ -57,7 +57,7 @@ class Timeline {
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
 	 * @param {string} [config.entrySelector = div] - the CSS selector used for entries
-	 * @param {object[]|null} [data = []] - The Timeline entries in JSON
+	 * @param {object[]} [data = []] - The Timeline entries in JSON
 	 */
 	constructor(container = "diagram", config = {}, data = []) {
 		this._container = container;
@@ -104,6 +104,10 @@ class Timeline {
 	 * @param {object} data
 	 */
 	addEntry(data) {
+		if (document.getElementById(data.id)) {
+			console.warn(`Invalid entry: ${data.id} already exists.`);
+			return;
+		}
 		if (![ "id", "name", "start" ].every((i) => data.hasOwnProperty(i))) {
 			console.warn(`Invalid entry: ${JSON.stringify(data)}. Entries must have at least id, name and start values.`);
 			return;
