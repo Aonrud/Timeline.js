@@ -1174,10 +1174,15 @@ class Timeline {
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
 	 * @param {string} [config.entrySelector = div] - the CSS selector used for entries
+	 * @param {object[]|null} [data = []] - The Timeline entries in JSON
 	 */
-	constructor(container = "diagram", config = {}) {
+	constructor(container = "diagram", config = {}, data = []) {
 		this._container = container;
 		this._setConfig(config);
+		
+		for (const entry of data) {
+			this.addEntry(entry);
+		}
 	}
 	
 	/**
@@ -1208,6 +1213,27 @@ class Timeline {
 	_setConfig(config) {
 		this._config = applyConfig(defaultTimelineConfig, config);
 		this._diagramConfig = applyConfig(defaultDiagramConfig, config);
+	}
+	
+	/**
+	 * Add a single entry from an object.
+	 * @protected
+	 * @param {object} data
+	 */
+	addEntry(data) {
+		if (![ "id", "name", "start" ].every((i) => data.hasOwnProperty(i))) {
+			console.warn(`Invalid entry: ${JSON.stringify(data)}. Entries must have at least id, name and start values.`);
+			return;
+		}
+		
+		const entry = document.createElement("div");
+		entry.id = data.id;
+		entry.innerText = data.name;
+		for (const k of Object.keys(data)) {
+			if (["id", "name"].includes(k)) continue;
+			entry.dataset[k] = data[k];
+		}
+		document.getElementById(this._container).append(entry);
 	}
 	
 	/**

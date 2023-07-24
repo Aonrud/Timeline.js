@@ -176,14 +176,14 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 
 **Kind**: global class  
 * [Timeline](#Timeline)
-    * [new Timeline([container], [config])](#new_Timeline_new)
+    * [new Timeline([container], [config], [data])](#new_Timeline_new)
     * [timeline.create()](#Timeline+create)
     * [timeline.panToEntry(id)](#Timeline+panToEntry)
     * ["timelineFind"](#Timeline+event_timelineFind)
 
 <a name="new_Timeline_new"></a>
 
-#### new Timeline([container], [config])
+#### new Timeline([container], [config], [data])
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -204,6 +204,7 @@ The simplest usage is to instantiate a new Timeline object, and then call the cr
 | [config.guides] | <code>boolean</code> | <code>true</code> | whether to draw striped guides at regular intervals in the timeline |
 | [config.guideInterval] | <code>number</code> | <code>5</code> | the interval in years between guides (ignored if 'guides' is false) |
 | [config.entrySelector] | <code>string</code> | <code>&quot;div&quot;</code> | the CSS selector used for entries |
+| [data] | <code>Array.&lt;object&gt;</code> \| <code>null</code> | <code>[]</code> | The Timeline entries in JSON |
 
 <a name="Timeline+create"></a>
 
