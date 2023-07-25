@@ -1193,9 +1193,6 @@
 		 * @fires Timeline#timelineFind
 		 */
 		panToEntry(id) {
-			if (this._config.panzoom !== true) {
-				throw new Error("Panzoom not enabled. Enable Panzoom to use the pan-to-entry feature.");
-			}
 			if (typeof this._pz === "undefined") {
 				throw new Error("Panzoom module missing. Include Panzoom to use the pan-to-entry feature.");
 			}
