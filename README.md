@@ -1,8 +1,6 @@
 # Timeline.js
 
-This module draws a timeline diagram, using SVGs to link entries.
-
-It was originally created to illustrate the development of left-wing political organisations in Ireland, as part of the Irish Left Archive. For a full-featured live example demonstrating the features documented below, visit the [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/).
+This module draws a timeline diagram, using SVG to link entries.
 
 ## Use
 
@@ -14,35 +12,50 @@ To use the timeline:
 * Add your timeline entries as `<div>` elements within `div#diagram`, with the appropriate `data-` attributes (see [HTML](#html) below).
 * Instantiate a new Timeline in JS, and call the `create()` method on it.
 
-Simple example including some configuration options, and a mixture of automatic and manual row positioning:
+### Examples
+
+Here is an example showing the development of Linux Desktop Environments since the mid-1990s.
+
+Entries are created using HTML `data` attributes, which determine their position and connections when the timeline is instantiated.
 
 ```html
 
 <div id="diagram">
-	<div id="A" data-start="1975" data-end="1982">A</div>
-	<div id="B" data-start="1972" data-merge="A" data-end="1978">B</div>
-	<div id="C" data-start="1980" data-links="A I" data-colour="#faa" data-become="D">C</div>
-	<div id="D" data-start="1985" data-become="E">D</div>
-	<div id="E" data-start="1990" >E</div>
-	<div id="F" data-start="1988" data-split="D" data-colour="#395">F</div>
-	<div id="G" data-start="1973" data-row="3">G</div>
-	<div id="H" data-start="1976" data-end="1995">H</div>
-	<div id="I" data-start="1976" data-row="4" data-end="1982" data-end-estimate="true">I</div>
+	<div id="KDE" data-start="1996" data-become="Plasma" data-colour="#179af3">KDE</div>
+	<div id="Plasma" data-start="2014" data-colour="#179af3">KDE Plasma</div>
+	<div id="Trinity" data-start="2010" data-split="KDE" data-colour="#01306f">Trinity Desktop Environment</div>
+	
+	<div id="Budgie" data-start="2014" data-split="GNOME" data-row="2" data-colour="#6bca81">Budgie</div>
+	<div id="GNOME" data-start="1997" data-row="3" data-colour="#000">GNOME</div>
+	<div id="Cinnamon" data-start="2013" data-split="GNOME" data-colour="#dc682e">Cinnamon</div>
+	<div id="MATE" data-start="2011" data-split="GNOME" data-colour="#9ddb60">MATE</div>
+			
+	<div id="XFCE" data-start="1997" data-colour="#00a8dd">XFCE</div>
+	
+	<div id="LXDE2" data-start="2013" data-split="LXDE" data-irregular="true" data-row="7" data-colour="#d1d1d1">LXDE</div>
+	<div id="LXDE" data-start="2006" data-become="LXQT" data-row="8" data-colour="#d1d1d1">LXDE</div>
+	<div id="LXQT" data-start="2013" data-row="8" data-colour="#0280b9">LXQT</div>
+	<div id="Razor-qt" data-start="2010" data-merge="LXQT" data-row="9" data-end="2013" data-colour="#006c96">Razor-qt</div>
+	
+	<div id="Enlightenment" data-start="1997" data-colour="#fff078">Enlightenment</div>
+	<div id="Moksha" data-start="2014" data-split="Enlightenment" data-colour="#5a860a">Moksha Desktop</div>
 </div>
 ```
 
 ```javascript
 
 const example = new Timeline("diagram", { 
-	yearStart: 1970,
-	yearEnd: 2000
+	yearStart: 1995
 });
 example.create();
 ```
 
 This is rendered as below:
 
-![](./images/example.png)
+![A timeline diagram showing the development of Linux Desktop Environments. Years are shown at intervals along the top and bottom, increasing from left to right. Entries (e.g. KDE, Gnome, XFCE) are depicted with a box, bordered with the entry's brand colour, from which a line extends to the right representing the length of its existence. Some entries split from or merge with others, represented by a connecting line.](./images/example.png)
+
+
+Timeline.js was originally created for an illustration of left-wing political organisations in Ireland, as part of the Irish Left Archive. For a full-featured live example demonstrating the features documented below, visit the [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/).
 
 ## Javascript
 
