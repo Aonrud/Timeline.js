@@ -1,7 +1,7 @@
 /**
  * Calculates an available position for diagram entries which have not had their row (Y-axis position) set manually.
  * This is fairly rudimentary - a row with sufficient empty space for each entry (and any it joins directly with) will be calculated.
- * If the entry splits from, merges with, or forks into other entries, the nearest row to those entries will be sought.
+ * If the entry splits from or merges with other entries, the nearest row to those entries will be sought.
  * This is most effectively used in a hybrid form, using some manual positioning, allowing simpler cases to be positioned automatically.
  */
 class DiagramPositioner {
@@ -39,31 +39,12 @@ class DiagramPositioner {
 			}
 		}
 		
-		if (entry.dataset.fork) {
-			seek = document.getElementById(entry.dataset.fork.split(" ")[0]);
-		}
-		
 		if (seek && near === null) {
 			if (!seek.dataset.row) {
 				this.setEntryRow(seek);
 			}
 			near = parseInt(seek.dataset.row);
 		}
-		
-		if (entry.dataset.fork) {
-			seek2 = document.getElementById(entry.dataset.fork.split(" ")[1]);
-			if (!seek2.dataset.row) {
-				this.setEntryRow(seek2);
-			}
-			//Temporarily allow the space behind the entries we are forking to
-			this._freeGridSpace(seek.dataset.row, this._yearToGrid(seek.dataset.start)-1, this._yearToGrid(seek.dataset.start)-1);
-			this._freeGridSpace(seek2.dataset.row, this._yearToGrid(seek2.dataset.start)-1, this._yearToGrid(seek2.dataset.start)-1);
-			
-			near = Math.round((parseInt(seek.dataset.row) + parseInt(seek2.dataset.row)) / 2);
-		}
-		
-		//TODO: If a forking entry has an entry which becomes it (i.e. predecessor)
-		//		then its position gets forced by that before it can be calculated...
 		
 		const row = this._calcEntryRow(entry, start, end, near);
 		entry.dataset.row = row;
@@ -72,12 +53,6 @@ class DiagramPositioner {
 			this._blockGridSpace(row, start, end);
 		} catch(e) {
 			console.log(`${e}: called for ${entry.id} with row ${row}`);
-		}
-		
-		if (entry.dataset.fork) {
-			//Block again the temporarily allowed space behind the entries we are forking to
-			this._blockGridSpace(seek.dataset.row, this._yearToGrid(seek.dataset.start)-1, this._yearToGrid(seek.dataset.start)-1);
-			this._blockGridSpace(seek2.dataset.row, this._yearToGrid(seek2.dataset.start)-1, this._yearToGrid(seek2.dataset.start)-1);
 		}
 	}
 	

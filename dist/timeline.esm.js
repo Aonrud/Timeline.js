@@ -268,7 +268,7 @@ class SvgConnector {
 /**
  * Calculates an available position for diagram entries which have not had their row (Y-axis position) set manually.
  * This is fairly rudimentary - a row with sufficient empty space for each entry (and any it joins directly with) will be calculated.
- * If the entry splits from, merges with, or forks into other entries, the nearest row to those entries will be sought.
+ * If the entry splits from or merges with other entries, the nearest row to those entries will be sought.
  * This is most effectively used in a hybrid form, using some manual positioning, allowing simpler cases to be positioned automatically.
  */
 class DiagramPositioner {
@@ -291,7 +291,7 @@ class DiagramPositioner {
 	setEntryRow(entry) {
 		const start = this._yearToGrid(entry.dataset.start);
 		const end = this._yearToGrid(this._calcGroupEnd(entry));
-		let seek = null, seek2 = null, near = null;
+		let seek = null, near = null;
 		
 		if (entry.dataset.split) {
 			seek = document.getElementById(entry.dataset.split);
@@ -306,31 +306,12 @@ class DiagramPositioner {
 			}
 		}
 		
-		if (entry.dataset.fork) {
-			seek = document.getElementById(entry.dataset.fork.split(" ")[0]);
-		}
-		
 		if (seek && near === null) {
 			if (!seek.dataset.row) {
 				this.setEntryRow(seek);
 			}
 			near = parseInt(seek.dataset.row);
 		}
-		
-		if (entry.dataset.fork) {
-			seek2 = document.getElementById(entry.dataset.fork.split(" ")[1]);
-			if (!seek2.dataset.row) {
-				this.setEntryRow(seek2);
-			}
-			//Temporarily allow the space behind the entries we are forking to
-			this._freeGridSpace(seek.dataset.row, this._yearToGrid(seek.dataset.start)-1, this._yearToGrid(seek.dataset.start)-1);
-			this._freeGridSpace(seek2.dataset.row, this._yearToGrid(seek2.dataset.start)-1, this._yearToGrid(seek2.dataset.start)-1);
-			
-			near = Math.round((parseInt(seek.dataset.row) + parseInt(seek2.dataset.row)) / 2);
-		}
-		
-		//TODO: If a forking entry has an entry which becomes it (i.e. predecessor)
-		//		then its position gets forced by that before it can be calculated...
 		
 		const row = this._calcEntryRow(entry, start, end, near);
 		entry.dataset.row = row;
@@ -339,12 +320,6 @@ class DiagramPositioner {
 			this._blockGridSpace(row, start, end);
 		} catch(e) {
 			console.log(`${e}: called for ${entry.id} with row ${row}`);
-		}
-		
-		if (entry.dataset.fork) {
-			//Block again the temporarily allowed space behind the entries we are forking to
-			this._blockGridSpace(seek.dataset.row, this._yearToGrid(seek.dataset.start)-1, this._yearToGrid(seek.dataset.start)-1);
-			this._blockGridSpace(seek2.dataset.row, this._yearToGrid(seek2.dataset.start)-1, this._yearToGrid(seek2.dataset.start)-1);
 		}
 	}
 	
@@ -677,7 +652,7 @@ class Diagram {
 			}
 			
 			//Validate all referenced IDs and warn if missing.
-			for (const attrib of [ "become", "split", "merge", "fork", "links" ]) {
+			for (const attrib of [ "become", "split", "merge", "links" ]) {
 				if (entry.dataset.hasOwnProperty(attrib)) {
 					for (const id of entry.dataset[attrib].split(" ")) {
 						if (!document.getElementById(id)) {
@@ -813,7 +788,6 @@ class Diagram {
 			
 			//Ends without joining another entry
 			if (!entry.dataset.hasOwnProperty("merge") &&
-				!entry.dataset.hasOwnProperty("fork") &&
 				!entry.dataset.hasOwnProperty("become")
 			) {
 				endMarker = (entry.dataset.endEstimate ? "dots" : "circle");
@@ -853,9 +827,6 @@ class Diagram {
 			if (entry.dataset.hasOwnProperty("split")) {
 				this._drawSplit(entry, colour);
 			}
-			if (entry.dataset.hasOwnProperty("fork")) {
- 				this._drawForks(entry, colour);
-			}
 			if (entry.dataset.hasOwnProperty("links")) {
 				this._drawLinks(entry, colour);
 			}
@@ -886,38 +857,6 @@ class Diagram {
 		
 		line.classList.add("split");
 		this._container.append(line);
-	}
-	
-	/**
-	 * Draw forks.
-	 * @protected
-	 * @deprecated
-	 * @param {HTMLElement} entry
-	 * @param {string} colour
-	 */
-	_drawForks(entry, colour) {
-		const forks = entry.dataset.fork.split(" ");
-		const forkYear = parseInt(entry.dataset.end);
-
-		const start = {
-			x: this._yearToWidth(forkYear),
-			y: this._getYCentre(entry)
-		};
-		const end1 = {
-			x: this._yearToWidth(forkYear+1),
-			y: this._getYCentre(document.getElementById(forks[0]))
-		};
-		const end2 = {
-			x: this._yearToWidth(forkYear+1),
-			y: this._getYCentre(document.getElementById(forks[1]))
-		};
-		
-		const fork1 = SvgConnector.draw({ start: start, end: end1, stroke: this._config.strokeWidth, colour: colour });
-		const fork2 = SvgConnector.draw({ start: start, end: end2, stroke: this._config.strokeWidth, colour: colour });
-		
-		fork1.classList.add("fork");
-		fork2.classList.add("fork");
-		this._container.append(fork1, fork2);
 	}
 	
 	/**
@@ -1070,13 +1009,6 @@ class Diagram {
 		
 		if (entry.dataset.become) {
 			return parseInt(document.getElementById(entry.dataset.become).dataset.start);
-		}
-		
-		if (entry.dataset.fork && !entry.dataset.end) {
-			const forks = entry.dataset.fork.split(" ");
-			const f1 = document.getElementById(forks[0]);
-			const f2 = document.getElementById(forks[1]);
-			return parseInt(Math.max(f1.dataset.start, f2.dataset.start));
 		}
 		
 		return parseInt(this._config.yearEnd);

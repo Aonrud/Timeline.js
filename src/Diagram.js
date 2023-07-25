@@ -120,7 +120,7 @@ class Diagram {
 			}
 			
 			//Validate all referenced IDs and warn if missing.
-			for (const attrib of [ "become", "split", "merge", "fork", "links" ]) {
+			for (const attrib of [ "become", "split", "merge", "links" ]) {
 				if (entry.dataset.hasOwnProperty(attrib)) {
 					for (const id of entry.dataset[attrib].split(" ")) {
 						if (!document.getElementById(id)) {
@@ -256,7 +256,6 @@ class Diagram {
 			
 			//Ends without joining another entry
 			if (!entry.dataset.hasOwnProperty("merge") &&
-				!entry.dataset.hasOwnProperty("fork") &&
 				!entry.dataset.hasOwnProperty("become")
 			) {
 				endMarker = (entry.dataset.endEstimate ? "dots" : "circle");
@@ -296,9 +295,6 @@ class Diagram {
 			if (entry.dataset.hasOwnProperty("split")) {
 				this._drawSplit(entry, colour);
 			}
-			if (entry.dataset.hasOwnProperty("fork")) {
- 				this._drawForks(entry, colour);
-			}
 			if (entry.dataset.hasOwnProperty("links")) {
 				this._drawLinks(entry, colour);
 			}
@@ -329,38 +325,6 @@ class Diagram {
 		
 		line.classList.add("split");
 		this._container.append(line);
-	}
-	
-	/**
-	 * Draw forks.
-	 * @protected
-	 * @deprecated
-	 * @param {HTMLElement} entry
-	 * @param {string} colour
-	 */
-	_drawForks(entry, colour) {
-		const forks = entry.dataset.fork.split(" ");
-		const forkYear = parseInt(entry.dataset.end);
-
-		const start = {
-			x: this._yearToWidth(forkYear),
-			y: this._getYCentre(entry)
-		}
-		const end1 = {
-			x: this._yearToWidth(forkYear+1),
-			y: this._getYCentre(document.getElementById(forks[0]))
-		}
-		const end2 = {
-			x: this._yearToWidth(forkYear+1),
-			y: this._getYCentre(document.getElementById(forks[1]))
-		}
-		
-		const fork1 = SvgConnector.draw({ start: start, end: end1, stroke: this._config.strokeWidth, colour: colour });
-		const fork2 = SvgConnector.draw({ start: start, end: end2, stroke: this._config.strokeWidth, colour: colour });
-		
-		fork1.classList.add("fork");
-		fork2.classList.add("fork");
-		this._container.append(fork1, fork2);
 	}
 	
 	/**
@@ -517,13 +481,6 @@ class Diagram {
 		
 		if (entry.dataset.become) {
 			return parseInt(document.getElementById(entry.dataset.become).dataset.start);
-		}
-		
-		if (entry.dataset.fork && !entry.dataset.end) {
-			const forks = entry.dataset.fork.split(" ");
-			const f1 = document.getElementById(forks[0]);
-			const f2 = document.getElementById(forks[1]);
-			return parseInt(Math.max(f1.dataset.start, f2.dataset.start));
 		}
 		
 		return parseInt(this._config.yearEnd);

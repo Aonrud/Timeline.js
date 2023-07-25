@@ -25,7 +25,7 @@ Simple example including some configuration options, and a mixture of automatic 
 	<div id="D" data-start="1985" data-become="E">D</div>
 	<div id="E" data-start="1990" >E</div>
 	<div id="F" data-start="1988" data-split="D" data-colour="#395">F</div>
-	<div id="G" data-start="1973" data-row="3" data-fork="H I">G</div>
+	<div id="G" data-start="1973" data-row="3">G</div>
 	<div id="H" data-start="1976" data-end="1995">H</div>
 	<div id="I" data-start="1976" data-row="4" data-end="1982" data-end-estimate="true">I</div>
 </div>
@@ -73,7 +73,6 @@ By default, entries should be `<div>` elements and the container has the id `#di
 |data-become|No|Another entry ID|The entry 'becomes' another entry. I.e. another entry is the continuation of this entry, and it will be drawn on the same line.  For example, use this when an entry changes its name.|
 |data-split|No|Another entry ID|If specified, the entry will be shown branching from the specified entry, at the year specified in 'data-start'.|
 |data-merge|No|Another entry ID|If specified, the entry will be connected to the specified entry, at the year specified in 'data-end'.|
-|data-fork|No|Two space-separated entry IDs|***Deprecated:** This will be removed in a future version. The same outcome can be created with split.* <br /> If specified, the entry line will be forked at the year specified by 'data-end' and connected to the two entries specified. |
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
 |data-colour|No|A CSS colour hex|The colour of the border around the entry and connections from it. |
 |data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
@@ -195,7 +194,7 @@ The row is determined in source-code order for each entry if it is omitted. A ro
 
 * Available space, starting from the first row until a space is found.
 * Connected entries (via 'data-becomes' attribute) must be on the same row.
-* Split, merge, and fork entries should aim to be as close to their linked entries as possible, depending on nearest available row with space.
+* Split and merge entries should aim to be as close to their linked entries as possible, depending on nearest available row with space.
 
 [^1]: If `data-start` is before the configured start of the timeline, it will be shown at the start with an arrow indicating it pre-exists the period shown.
 
