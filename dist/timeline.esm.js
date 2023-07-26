@@ -737,6 +737,13 @@ class Diagram {
 			let top = this._config.rowHeight - event.offsetHeight;
 			let left = this._yearToWidth(event.dataset.year);
 			
+			//Wrap content in a span for easier styling
+			const span = document.createElement("span");
+			span.dataset.year = event.dataset.year; //Allows using value in CSS content on span.
+			span.innerText = event.innerText;
+			event.innerText = "";
+			event.append(span);
+			
 			if (event.dataset.target) {
 				const target = document.getElementById(event.dataset.target);
 				top = this._calcTop(target) + ((this._config.boxHeight - event.offsetHeight) * 0.5);

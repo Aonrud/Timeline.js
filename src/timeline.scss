@@ -116,14 +116,13 @@
 
 .event {
 	position: absolute;
-	padding: 0.2em;
 	transition-property: width, height;
 	transition-duration: 0.2s;
 	transition-timing-function: ease;
 	cursor: help;
 	overflow: hidden;
 	&:hover, &:focus {
-		&:before {
+		span:before {
 			font-weight: 700;
 			content: attr(data-year) ': ';
 		}
@@ -136,6 +135,7 @@
 		width: calc(var(--tl-height-box) * 1.5);
 		height: calc(var(--tl-height-box) * 1.5);
 		text-align: center;
+		padding: 0.2em;
 		border: var(--tl-size-border) solid var(--tl-colour-stroke);
 		border-radius: 50%;
 		transform: scale(var(--tl-scale-event));
@@ -155,18 +155,6 @@
 		height: 2em;
 		transition-duration: 0s;
 		color: var(--tl-colour-entry);
-		&:hover, &:focus {
-			width: auto;
-			height: calc(100% - var(--tl-height-row) + 2em);
-			border: none;
-			border-left: 3px dashed var(--tl-colour-text);
-			background: transparent;
-			color: var(--tl-colour-text);
-			transition-duration: 0.2s;
-			&:after {
-				content: "";
-			}
-		}
 		&:after {
 			content: "🛈";
 			font-size: 1.3em;
@@ -177,6 +165,26 @@
 			width: 100%;
 			height: 100%;
 			text-align: center;
+		}
+		&:hover, &:focus {
+			width: var(--tl-size-border);
+			height: calc(100% - var(--tl-height-row) + 2em);
+			border: none;
+			border-left: var(--tl-size-border) dashed var(--tl-colour-text);
+			background: transparent;
+			color: var(--tl-colour-text);
+			transition-duration: 0.2s;
+			overflow: visible;
+			span {
+				display: inline-block;
+				width: max-content;
+				padding: 0.3em;
+				background: var(--tl-colour-background);
+				
+			}
+			&:after {
+				content: none;
+			}
 		}
 	}
 }
