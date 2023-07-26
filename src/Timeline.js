@@ -57,14 +57,18 @@ class Timeline {
 	 * @param {boolean} [config.guides = true] - whether to draw striped guides at regular intervals in the timeline
 	 * @param {number} [config.guideInterval = 5] - the interval in years between guides (ignored if 'guides' is false)
 	 * @param {string} [config.entrySelector = div] - the CSS selector used for entries
-	 * @param {object[]} [data = []] - The Timeline entries in JSON
+	 * @param {object[]} [entries = []] - The Timeline entries as an array of objects
+	 * @param {object[]} [events = []] - Events as an array of objects
 	 */
-	constructor(container = "diagram", config = {}, data = []) {
+	constructor(container = "diagram", config = {}, entries = [], events = []) {
 		this._container = container;
 		this._setConfig(config);
 		
-		for (const entry of data) {
+		for (const entry of entries) {
 			this.addEntry(entry);
+		}
+		for (const event of events) {
+			this.addEvent(event);
 		}
 	}
 	
@@ -121,6 +125,27 @@ class Timeline {
 			entry.dataset[k] = data[k];
 		}
 		document.getElementById(this._container).append(entry);
+	}
+	
+	/**
+	 * Add a single event from an object.
+	 * @protected
+	 * @param {object} data
+	 */
+	addEvent(data) {
+		if (!data.year || ! data.content) {
+			console.warn(`Invalid event: ${JSON.stringify(data)}. Events must have at least a year and content property.`);
+			return;
+		}
+		
+		const event = document.createElement("div");
+		event.classList.add("event");
+		event.innerText = data.content;
+		for (const k of Object.keys(data)) {
+			if (k == "content") continue;
+			event.dataset[k] = data[k];
+		}
+		document.getElementById(this._container).append(event);
 	}
 	
 	/**

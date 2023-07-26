@@ -49,7 +49,8 @@ class Diagram {
 		this._config = this._makeConfig(config);
 		this._applyCSSProperties();
 		this._container = document.getElementById(container);
-		this._entries = document.querySelectorAll("#" + container + " > " + this._config.entrySelector+":not(.timeline-exclude)");
+		this._entries = document.querySelectorAll("#" + container + " > " + this._config.entrySelector+":not(.timeline-exclude):not(.event)");
+		this._events = this._container.querySelectorAll(".event");
 	}
 	
 	/**
@@ -103,6 +104,7 @@ class Diagram {
  		this._container.style.width = (this._config.yearEnd + 1 - this._config.yearStart) * this._config.yearWidth + "px"; //Add 1 year for padding
 	
 		this._setEntries();
+		this._setEvents();
 	}
 	
 	/** Prepare all entries with initial classes and data
@@ -168,7 +170,7 @@ class Diagram {
 		//Position entries and add additional data
 		for (const entry of this._entries) {
 			entry.style.left = this._yearToWidth(entry.dataset.start) + "px";
-			entry.style.top = (parseInt(entry.dataset.row) +1) * this._config.rowHeight + this._config.padding + "px"; //Add 1 to row due to 0 index.
+			entry.style.top = this._calcTop(entry) + "px";
 			if (entry.dataset.colour) {
 				entry.style.borderColor = entry.dataset.colour;
 			}
@@ -180,13 +182,49 @@ class Diagram {
 		}
 		
 		//Adjust spacing for entries that overlap
-		//Accomodates entries that are both the same year
+		//Accommodates entries that are both the same year
 		//Width needs to be known before nudging, so this has to be separated
 		for (const entry of this._container.querySelectorAll(this._config.entrySelector + '[data-become]')) {
 			if (entry.dataset.start == document.getElementById(entry.dataset.become).dataset.start) {
 				entry.style.left = parseFloat(entry.style.left) - this._config.boxMinWidth/2 + "px";
 				document.getElementById(entry.dataset.become).style.left = parseFloat(document.getElementById(entry.dataset.become).style.left) + this._config.boxMinWidth/2 + "px";
 			}
+		}
+	}
+	
+	/**
+	 * Set styles for each event to correctly position them
+	 * @protected
+	 */
+	_setEvents() {
+		for (const event of this._events) {
+			if (event.dataset.target && !document.getElementById(event.dataset.target)) {
+				console.warn(`Event has an invalid target, which will be ignored: ${JSON.stringify(event)}`);
+			}
+			
+			let top = this._config.rowHeight - event.offsetHeight;
+			let left = this._yearToWidth(event.dataset.year);
+			
+			if (event.dataset.target) {
+				const target = document.getElementById(event.dataset.target);
+				top = this._calcTop(target) + ((this._config.boxHeight - event.offsetHeight) * 0.5);
+				left = left - (event.offsetWidth * 0.5);
+				
+				//Match the target colour. Add style to head instead of inline to avoid over-riding the hover/focus colours (simpler than lots of event listeners).
+				if (target.dataset.colour) {
+					const css = document.createTextNode(`.event[data-target="${target.id}"] {border-color: ${target.dataset.colour}; color: ${target.dataset.colour}; background-color: ${target.dataset.colour};}`);
+					if (!document.getElementById("tl-styles")) {
+						const s = document.createElement("style");
+						s.id = "tl-styles";
+						s.setAttribute('type', 'text/css');
+						document.head.append(s);
+					}
+					document.getElementById("tl-styles").append(css);
+				}
+			}
+			
+			event.style.left = left + "px";
+			event.style.top = top + "px";
 		}
 	}
 	
@@ -267,7 +305,7 @@ class Diagram {
 			}
 			
 			if (entry.dataset.hasOwnProperty("merge")) {
-				//Special case of one year length and then merging. We need to bump the merge point forward by 1 year to meet an 'end of year' point. Otherwise, it's indistinguishable from a split.
+				//Special case of one year length and then merging. We need to bump the merge eventnt forward by 1 year to meet an 'end of year' eventnt. Otherwise, it's indistinguishable from a split.
 				if (entry.dataset.start == entry.dataset.end) {
 					end.x += this._config.yearWidth;
 				}
@@ -420,11 +458,11 @@ class Diagram {
 	/**
 	 * Find and return the coordinates where lines should join an element on each side.
 	 * Where multiple lines are meeting an element on one side, specifying the offest number
-	 * allows these to join at different points.
+	 * allows these to join at different eventnts.
 	 * @protected
 	 * @param {HTMLElement} entry
 	 * @param {string} side - Must be "top", "bottom", "left" or "right"
-	 * @param {number} offset - the number of steps to offset the point (use if multiple lines join an entry on the same side).
+	 * @param {number} offset - the number of steps to offset the eventnt (use if multiple lines join an entry on the same side).
 	 * @return {object}
 	 */
 	_getJoinCoords(entry, side, offset = 0) {
@@ -485,6 +523,17 @@ class Diagram {
 		
 		return parseInt(this._config.yearEnd);
 	}
+	
+	/**
+	 * Calculate the absolute top position in px.
+	 * @protected
+	 * @param {HTMLElement} entry
+	 * @return {number}
+	 */
+	_calcTop(entry) {
+		 //Add 1 to row due to 0 index.
+		return parseInt((parseInt(entry.dataset.row) +1) * this._config.rowHeight + this._config.padding)
+	}
 
 	/**
 	 * Check if an entry should be small on the graph (too brief to fit full box size)
@@ -524,7 +573,7 @@ class Diagram {
 	}
 	
 	/**
-	 * Get the width in px of the diagram at the point sepecified by a particular year.
+	 * Get the width in px of the diagram at the eventnt sepecified by a particular year.
 	 * @param {number} year
 	 * @protected
 	 * @return {number}
