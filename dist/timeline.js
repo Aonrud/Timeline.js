@@ -743,6 +743,12 @@
 				let top = this._config.rowHeight - event.offsetHeight;
 				let left = this._yearToWidth(event.dataset.year);
 				
+				//If events overlap
+				const yearEvents = [...this._events].filter(e => {return !e.dataset.target && e.dataset.year == event.dataset.year});
+				if (yearEvents.length > 1 && yearEvents.indexOf(event) !== 0) {
+					top -= event.offsetHeight * 0.5 * yearEvents.indexOf(event);
+				}
+				
 				//Wrap content in a span for easier styling
 				const span = document.createElement("span");
 				span.dataset.year = event.dataset.year; //Allows using value in CSS content on span.
