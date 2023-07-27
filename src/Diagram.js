@@ -193,7 +193,7 @@ class Diagram {
 	}
 	
 	/**
-	 * Set styles for each event to correctly position them
+	 * Set styles for each event to correctly position them.
 	 * @protected
 	 */
 	_setEvents() {
@@ -212,27 +212,44 @@ class Diagram {
 			event.innerText = "";
 			event.append(span);
 			
+			if (event.dataset.colour) {
+				const classSafe = `colour-${event.dataset.colour.replace(/[!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '')}`;
+				event.classList.add(classSafe);
+				
+				let c = `.event:not([data-target]).${classSafe}:after { color: ${event.dataset.colour} }`;
+				c += `.event.${classSafe}:hover span { color: ${event.dataset.colour} }`;
+				this._addCss(c);
+			}
+						
 			if (event.dataset.target) {
 				const target = document.getElementById(event.dataset.target);
 				top = this._calcTop(target) + ((this._config.boxHeight - event.offsetHeight) * 0.5);
 				left = left - (event.offsetWidth * 0.5);
 				
-				//Match the target colour. Add style to head instead of inline to avoid over-riding the hover/focus colours (simpler than lots of event listeners).
 				if (target.dataset.colour) {
-					const css = document.createTextNode(`.event[data-target="${target.id}"] {border-color: ${target.dataset.colour}; color: ${target.dataset.colour}; background-color: ${target.dataset.colour};}`);
-					if (!document.getElementById("tl-styles")) {
-						const s = document.createElement("style");
-						s.id = "tl-styles";
-						s.setAttribute('type', 'text/css');
-						document.head.append(s);
-					}
-					document.getElementById("tl-styles").append(css);
+					const css = `.event[data-target="${target.id}"] {border-color: ${target.dataset.colour}; color: ${target.dataset.colour}; background-color: ${target.dataset.colour};}`;
+					this._addCss(css);
 				}
 			}
 			
 			event.style.left = left + "px";
 			event.style.top = top + "px";
 		}
+	}
+	
+	/**
+	 * Add CSS to inserted header styles. Create the style element if not extant.
+	 * @protected
+	 * @param {string} css
+	 */
+	_addCss(css) {
+		if (!document.getElementById("tl-styles")) {
+			const s = document.createElement("style");
+			s.id = "tl-styles";
+			s.setAttribute('type', 'text/css');
+			document.head.append(s);
+		}
+		document.getElementById("tl-styles").append(document.createTextNode(css));
 	}
 	
 	/**
