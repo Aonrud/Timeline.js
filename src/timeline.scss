@@ -154,7 +154,7 @@
 		width: 2em;
 		height: 2em;
 		transition-duration: 0s;
-		color: var(--tl-colour-entry);
+		color: transparent;
 		&:after {
 			content: "🛈";
 			font-size: 1.3em;

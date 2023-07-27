@@ -150,7 +150,7 @@
   width: 2em;
   height: 2em;
   transition-duration: 0s;
-  color: var(--tl-colour-entry);
+  color: transparent;
 }
 .event:not([data-target]):after {
   content: "🛈";
