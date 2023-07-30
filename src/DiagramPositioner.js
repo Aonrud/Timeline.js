@@ -24,7 +24,7 @@ class DiagramPositioner {
 	setEntryRow(entry) {
 		const start = this._yearToGrid(entry.dataset.start);
 		const end = this._yearToGrid(this._calcGroupEnd(entry));
-		let seek = null, seek2 = null, near = null;
+		let seek = null, near = null;
 		
 		if (entry.dataset.split) {
 			seek = document.getElementById(entry.dataset.split);
@@ -126,17 +126,25 @@ class DiagramPositioner {
 	}
 	
 	/**
-	 * Find a row in the grid with space between the provided start and end points.
+	 * Find a row with available space between start and end, starting from the centre of the grid.
+	 * Otherwise add a new row.
 	 * @protected
 	 * @param {number} start
 	 * @param {number} end
 	 * @return {number}
 	 */
 	_findGridSpace(start, end) {
+		let test = Math.floor(this.rows / 2);
+		let above = false;
+		
 		for (let i = 0; i < this.rows; i++) {
-			if (this._checkGridSpace(i, start, end)) {
-				return i;
+			test = ( above ? test - i : test + i );
+			console.log(`Checking row ${test}`);
+			if (this._checkGridSpace(test, start, end)) {
+				console.log(`${test} available.`);
+				return test;
 			}
+			above = !above;
 		}
 		this._addGridRow();
 		return this.rows - 1;
@@ -187,6 +195,9 @@ class DiagramPositioner {
 	 * @return {boolean}
 	 */
 	_checkGridSpace(y, start, end) {
+		//Validate y
+		if (y > this._grid.length - 1) console.log(this._grid);
+		
 		//In most instances, we don't want to extend to the end of the "end" year, but to the start. So that, e.g. we can join with another entry starting on that year and not overlap.  However, entries with the same start and end must take up some space.
 		if (start === end) {
 			end += 1;
