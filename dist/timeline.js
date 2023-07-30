@@ -737,7 +737,8 @@
 		_setEvents() {
 			for (const event of this._events) {
 				if (event.dataset.target && !document.getElementById(event.dataset.target)) {
-					console.warn(`Event has an invalid target, which will be ignored: ${JSON.stringify(event)}`);
+					console.warn(`Event has an invalid target – skipping: ${JSON.stringify(event)}`);
+					continue;
 				}
 				
 				let top = this._config.rowHeight - event.offsetHeight;
