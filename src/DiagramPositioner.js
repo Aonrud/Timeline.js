@@ -52,7 +52,7 @@ class DiagramPositioner {
 		try {
 			this._blockGridSpace(row, start, end);
 		} catch(e) {
-			console.log(`${e}: called for ${entry.id} with row ${row}`);
+			console.warn(`${e}: called for ${entry.id} with row ${row}`);
 		}
 	}
 	
@@ -139,9 +139,7 @@ class DiagramPositioner {
 		
 		for (let i = 0; i < this.rows; i++) {
 			test = ( above ? test - i : test + i );
-			console.log(`Checking row ${test}`);
 			if (this._checkGridSpace(test, start, end)) {
-				console.log(`${test} available.`);
 				return test;
 			}
 			above = !above;
@@ -195,9 +193,6 @@ class DiagramPositioner {
 	 * @return {boolean}
 	 */
 	_checkGridSpace(y, start, end) {
-		//Validate y
-		if (y > this._grid.length - 1) console.log(this._grid);
-		
 		//In most instances, we don't want to extend to the end of the "end" year, but to the start. So that, e.g. we can join with another entry starting on that year and not overlap.  However, entries with the same start and end must take up some space.
 		if (start === end) {
 			end += 1;

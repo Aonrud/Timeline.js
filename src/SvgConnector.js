@@ -244,7 +244,6 @@ class SvgConnector {
 		const t = document.createElementNS(svgns, "title");
 		t.append(document.createTextNode(title));
 		t.dataset.title = title;
-		console.log(title);
 		return t;
 	}
 }
