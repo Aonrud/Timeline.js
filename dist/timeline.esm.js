@@ -530,7 +530,7 @@ function applyConfig(defaults, conf) {
 	let c = {};
 	
 	for (const prop in defaults) {
-		if(conf.hasOwnProperty(prop)) {
+		if(Object.hasOwn(conf, prop)) {
 			c[prop] = conf[prop];
 		} else {
 			c[prop] = defaults[prop];
@@ -638,7 +638,7 @@ class Diagram {
 		//Set up container
 		this._container.classList.add("timeline-container");
 		this._container.style.height = (this._config.rows + 2) * this._config.rowHeight + "px"; //Add 2 rows to total for top and bottom space
- 		this._container.style.width = (this._config.yearEnd + 1 - this._config.yearStart) * this._config.yearWidth + "px"; //Add 1 year for padding
+		this._container.style.width = (this._config.yearEnd + 1 - this._config.yearStart) * this._config.yearWidth + "px"; //Add 1 year for padding
 	
 		this._setEntries();
 		this._setEvents();
@@ -660,7 +660,7 @@ class Diagram {
 			
 			//Validate all referenced IDs and warn if missing.
 			for (const attrib of [ "become", "split", "merge", "links" ]) {
-				if (entry.dataset.hasOwnProperty(attrib)) {
+				if (Object.hasOwn(entry.dataset, attrib)) {
 					for (const id of entry.dataset[attrib].split(" ")) {
 						if (!document.getElementById(id)) {
 							console.warn(`${entry.id}: Given ${attrib} ID "${id}" doesn't exist. Ignoring.`);
@@ -861,18 +861,18 @@ class Diagram {
 			};
 			
 			//Ends without joining another entry
-			if (!entry.dataset.hasOwnProperty("merge") &&
-				!entry.dataset.hasOwnProperty("become")
+			if (!Object.hasOwn(entry.dataset, "merge") &&
+				!Object.hasOwn(entry.dataset, "become")
 			) {
 				endMarker = (entry.dataset.endEstimate ? "dots" : "circle");
 			}
 			
-			if (entry.dataset.hasOwnProperty("become")) { 
+			if (Object.hasOwn(entry.dataset, "become")) { 
 				end = this._getJoinCoords(document.getElementById(entry.dataset.become), 'left');
 				cssClass = "become";
 			}
 			
-			if (entry.dataset.hasOwnProperty("merge")) {
+			if (Object.hasOwn(entry.dataset, "merge")) {
 				//Special case of one year length and then merging. We need to bump the merge eventnt forward by 1 year to meet an 'end of year' eventnt. Otherwise, it's indistinguishable from a split.
 				if (entry.dataset.start == entry.dataset.end) {
 					end.x += this._config.yearWidth;
@@ -898,10 +898,10 @@ class Diagram {
 				this._container.append(line);
 			}
 
-			if (entry.dataset.hasOwnProperty("split")) {
+			if (Object.hasOwn(entry.dataset, "split")) {
 				this._drawSplit(entry, colour);
 			}
-			if (entry.dataset.hasOwnProperty("links")) {
+			if (Object.hasOwn(entry.dataset, "links")) {
 				this._drawLinks(entry, colour);
 			}
 		}
@@ -1095,7 +1095,7 @@ class Diagram {
 	 * @return {number}
 	 */
 	_calcTop(entry) {
-		 //Add 1 to row due to 0 index.
+		//Add 1 to row due to 0 index.
 		return parseInt((parseInt(entry.dataset.row) +1) * this._config.rowHeight + this._config.padding)
 	}
 
@@ -1254,7 +1254,7 @@ class Timeline {
 			console.warn(`Invalid entry: ${data.id} already exists.`);
 			return;
 		}
-		if (![ "id", "name", "start" ].every((i) => data.hasOwnProperty(i))) {
+		if (![ "id", "name", "start" ].every((i) => Object.hasOwn(data, i))) {
 			console.warn(`Invalid entry: ${JSON.stringify(data)}. Entries must have at least id, name and start values.`);
 			return;
 		}
@@ -1460,7 +1460,6 @@ class Timeline {
 		e.preventDefault();
 		
 		const find = e.target.querySelector("input[name=find-id]").value;
-		e.target.querySelector("input[name=finder]").value;
 		
 		if(document.getElementById(find)) this.panToEntry(find);
 
@@ -1497,7 +1496,7 @@ class Timeline {
 	 * @protected
 	 * @param {object} e
 	 */
-	_hashHandler(e) {
+	_hashHandler() {
 		const id = location.hash.replace('#find-', '');
 		if(document.getElementById(id) && this._pz) this.panToEntry(id);
 	}

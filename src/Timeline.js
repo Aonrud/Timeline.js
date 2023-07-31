@@ -112,7 +112,7 @@ class Timeline {
 			console.warn(`Invalid entry: ${data.id} already exists.`);
 			return;
 		}
-		if (![ "id", "name", "start" ].every((i) => data.hasOwnProperty(i))) {
+		if (![ "id", "name", "start" ].every((i) => Object.hasOwn(data, i))) {
 			console.warn(`Invalid entry: ${JSON.stringify(data)}. Entries must have at least id, name and start values.`);
 			return;
 		}
@@ -318,7 +318,6 @@ class Timeline {
 		e.preventDefault();
 		
 		const find = e.target.querySelector("input[name=find-id]").value;
-		const name = e.target.querySelector("input[name=finder]").value;
 		
 		if(document.getElementById(find)) this.panToEntry(find);
 
@@ -355,7 +354,7 @@ class Timeline {
 	 * @protected
 	 * @param {object} e
 	 */
-	_hashHandler(e) {
+	_hashHandler() {
 		const id = location.hash.replace('#find-', '');
 		if(document.getElementById(id) && this._pz) this.panToEntry(id);
 	}

@@ -9,7 +9,7 @@ function applyConfig(defaults, conf) {
 	let c = {};
 	
 	for (const prop in defaults) {
-		if(conf.hasOwnProperty(prop)) {
+		if(Object.hasOwn(conf, prop)) {
 			c[prop] = conf[prop];
 		} else {
 			c[prop] = defaults[prop];

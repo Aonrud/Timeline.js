@@ -1,9 +1,13 @@
 //import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import header from './src/license-header.js';
+import eslint from '@rollup/plugin-eslint';
 
 export default {
 	input: 'src/Timeline.js',
+	plugins: [
+		eslint()
+	],
 	output: [
 		{
 			name: 'Timeline',
