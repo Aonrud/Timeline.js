@@ -151,19 +151,24 @@
 	
 	//Use dimension change to expand from top left corner;
 	&:not([data-target]) {
-		width: 2em;
-		height: 2em;
+		width: 1.5em;
+		height: 1.5em;
 		transition-duration: 0s;
 		color: transparent;
 		&:after {
+			box-sizing: border-box;
 			content: "ℹ";
-			font-size: 1.3em;
+			line-height: 1em;
 			color: var(--tl-colour-text);
+			border: 1px solid var(--tl-colour-text);
+			background: var(--tl-colour-entry);
+			border-radius: 50%;
 			position: absolute;
 			top: 0;
 			left: 0;
 			width: 100%;
 			height: 100%;
+			padding: 0.2em;
 			text-align: center;
 		}
 		&:hover, &:focus {

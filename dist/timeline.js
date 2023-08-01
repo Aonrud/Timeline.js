@@ -766,7 +766,7 @@
 					const classSafe = `colour-${event.dataset.colour.replace(/[!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '')}`;
 					event.classList.add(classSafe);
 					
-					let c = `.event:not([data-target]).${classSafe}:after { color: ${event.dataset.colour} }`;
+					let c = `.event:not([data-target]).${classSafe}:after { color: ${event.dataset.colour}; border-color: ${event.dataset.colour} }`;
 					c += `.event.${classSafe}:hover span { color: ${event.dataset.colour} }`;
 					this._addCss(c);
 				}
