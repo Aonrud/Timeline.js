@@ -9,36 +9,39 @@ To use the timeline:
 * Include [`timeline.min.js`](dist/timeline.min.js) and [`timeline.min.css`](dist/timeline.min.js) in your document.
 * Optionally include [`timeline-dark.min.js`](dist/timeline-dark.min.js) to enable the default [dark mode](#dark-mode).
 * Add a `<div>` with `id="diagram"` to your HTML.
-* Add your timeline entries as `<div>` elements within `div#diagram`, with the appropriate `data-` attributes (see [HTML](#html) below).
+* Add your timeline entries and events as `<div>` elements within `div#diagram`, with the appropriate `data-` attributes (see [HTML](#html) below).
 * Instantiate a new Timeline in JS, and call the `create()` method on it.
 
-### Examples
+### Example
 
 Here is an example showing the development of Linux Desktop Environments since the mid-1990s.
 
-Entries are created using HTML `data` attributes, which determine their position and connections when the timeline is instantiated.
+Entries are created using HTML `data` attributes, which determine their position and connections when the timeline is instantiated. Events can also be added, either to a particular entry or as a general event on the timeline.
 
 ```html
 
 <div id="diagram">
+	<!--Timeline entries-->
 	<div id="KDE" data-start="1996" data-become="Plasma" data-colour="#179af3">KDE</div>
 	<div id="Plasma" data-start="2014" data-colour="#179af3">KDE Plasma</div>
 	<div id="Trinity" data-start="2010" data-split="KDE" data-colour="#01306f">Trinity Desktop Environment</div>
-	
 	<div id="Budgie" data-start="2014" data-split="GNOME" data-row="2" data-colour="#6bca81">Budgie</div>
 	<div id="GNOME" data-start="1997" data-row="3" data-colour="#000">GNOME</div>
 	<div id="Cinnamon" data-start="2013" data-split="GNOME" data-colour="#dc682e">Cinnamon</div>
 	<div id="MATE" data-start="2011" data-split="GNOME" data-colour="#9ddb60">MATE</div>
-			
 	<div id="XFCE" data-start="1997" data-colour="#00a8dd">XFCE</div>
-	
 	<div id="LXDE2" data-start="2013" data-split="LXDE" data-irregular="true" data-row="7" data-colour="#d1d1d1">LXDE</div>
 	<div id="LXDE" data-start="2006" data-become="LXQT" data-row="8" data-colour="#d1d1d1">LXDE</div>
 	<div id="LXQT" data-start="2013" data-row="8" data-colour="#0280b9">LXQT</div>
 	<div id="Razor-qt" data-start="2010" data-merge="LXQT" data-row="9" data-end="2013" data-colour="#006c96">Razor-qt</div>
-	
 	<div id="Enlightenment" data-start="1997" data-colour="#fff078">Enlightenment</div>
 	<div id="Moksha" data-start="2014" data-split="Enlightenment" data-colour="#5a860a">Moksha Desktop</div>
+	
+	<!--Events-->
+	<div class="event" data-year="2004">X.org is founded as a fork of XFree86.</div>
+	<div class="event" data-year="2008">The Wayland project was started.</div>
+	<div class="event" data-year="2011" data-target="GNOME">Gnome 3.0 was released.</div>
+	<div class="event" data-year="2008" data-target="KDE">KDE 4 was released.</div>
 </div>
 ```
 
@@ -54,8 +57,10 @@ This is rendered as below:
 
 ![A timeline diagram showing the development of Linux Desktop Environments. Years are shown at intervals along the top and bottom, increasing from left to right. Entries (e.g. KDE, Gnome, XFCE) are depicted with a box, bordered with the entry's brand colour, from which a line extends to the right representing the length of its existence. Some entries split from or merge with others, represented by a connecting line.](./images/example.png)
 
+### Live examples
 
-Timeline.js was originally created for an illustration of left-wing political organisations in Ireland, as part of the Irish Left Archive. For a full-featured live example demonstrating the features documented below, visit the [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/).
+* [Electoral Parties in the Republic of Ireland](https://github.com/Aonrud/Irish-Electoral-Parties)
+* [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/) on the Irish Left Archive
 
 ## Javascript
 
@@ -87,7 +92,7 @@ By default, entries should be `<div>` elements and the container has the id `#di
 |data-split|No|Another entry ID|If specified, the entry will be shown branching from the specified entry, at the year specified in 'data-start'.|
 |data-merge|No|Another entry ID|If specified, the entry will be connected to the specified entry, at the year specified in 'data-end'.|
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
-|data-colour|No|A CSS colour hex|The colour of the border around the entry and connections from it. |
+|data-colour|No|A CSS colour value|The colour of the border around the entry and connections from it. |
 |data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
 
 ### Javascript 
@@ -116,6 +121,33 @@ const example = new Timeline(
 
 example.create();
 ```
+
+## Adding Events
+
+Two kinds of events can be added to the timeline:
+
+1. general events appearing on the date line at the top of the diagram;
+2. entry-specific events, appearing on an entry's own timeline.
+
+These create information points that are expanded by hovering or touching. (See the [example screenshot](#examples) above or the [live examples](#live-examples).) As with entries, they can be added either with HTML `data` attributes or in Javascript.
+
+### HTML
+
+Events are added by creating a `<div>` with the class `event` and the required attributes.
+
+|Attribute	|Required	|Value	|Use	|
+|-----------|-----------|-------|-------|
+|data-year  |Yes|<number> A year| Determines where on the timeline the event appears.|
+|data-target|No|<string> An entry ID| If defined, places the event on an entry's line instead of the top date line.|
+|data-colour|No|A CSS colour value| Defines the colour of the text of the event. For general events (no target entry) this also defines the colour of the information marker on the date line.|
+
+### Javascript
+
+As with entries, events can also be added using an array of objects in Javascript.
+
+Each event must have at least `year` and `content` properties. The content provides the message shown for the event (determined by the inner text of the element when defining events in HTML).
+
+In addition, if a valid entry id is provided in the `target` property, it will be displayed as an entry-specific event.
 
 ## CSS Styling
 
@@ -199,17 +231,17 @@ The provided classes will position the controls in a box in the bottom right cor
 
 ## Entry Positioning
 
-The X axis position of each entry must be manually set by specifing the 'data-start' attribute [^1].  The extent of the entry along the timeline is determined either by the 'data-end' attribute, or extends to the end of the timeline.
+The X axis position of each entry is manually set by specifing the 'data-start' attribute *(**note:** If `data-start` is before the configured start of the timeline, it will be shown at the start with an arrow indicating it pre-exists the period shown)*. The extent of the entry along the timeline is determined either by the 'data-end' attribute, or extends to the end of the timeline.
 
 Specifying the row manually for each entry is not required. However, only some basic tests are performed to choose a suitable row for each entry when it is not specified, so aside from simple examples, it is recommended to manually set 'data-row' at least on a proportion of entries and those with complex links to ensure a sensible layout.
 
 The row is determined in source-code order for each entry if it is omitted. A row is determined as follows:
 
-* Available space, starting from the first row until a space is found.
+* Available space, starting from the centre of the diagram.
 * Connected entries (via 'data-becomes' attribute) must be on the same row.
-* Split and merge entries should aim to be as close to their linked entries as possible, depending on nearest available row with space.
+* Split and merge entries should aim to be as close to their linked entries as possible, depending on nearest available space.
 
-[^1]: If `data-start` is before the configured start of the timeline, it will be shown at the start with an arrow indicating it pre-exists the period shown.
+[^1]: 
 
 ## Javascript Documentation
 
