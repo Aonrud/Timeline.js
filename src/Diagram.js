@@ -136,7 +136,7 @@ class Diagram {
 	}
 	
 	/**
-	 * Set the row for all entries, using automatic diagramPositioner if available
+	 * Set the row for all entries using automatic diagramPositioner
 	 * @protected
 	 */
 	_prepareRows() {
@@ -149,16 +149,9 @@ class Diagram {
 			}
 		}
 
-		//If we are using the positioner only (otherwise must be manually set)
-		if (typeof DiagramPositioner === "function") {
-			const years = this._config.yearEnd - this._config.yearStart;
-			const dp = new DiagramPositioner(years, this._config.yearStart, rows);
-			
-			for (const entry of this._entries) {
-				dp.setEntryRow(entry);
-			}
-			rows = dp.rows;
-		}
+		const dp = new DiagramPositioner(this._entries, this._config.yearStart, this._config.yearEnd);
+		dp.calculate();
+		rows = dp.rows;
 		this._setConfigProp("rows", rows);
 	}
 	
@@ -414,11 +407,13 @@ class Diagram {
 		}
 		
 		for (const link of links) {
-			const target = document.getElementById(link);			
+			const target = document.getElementById(link);
 			let sourceSide, targetSide, start = { x: 0, y: 0}, end = { x: 0, y: 0};
 			
 			const eRow = parseInt(entry.dataset.row);
 			const tRow = parseInt(target.dataset.row);
+						
+			if (eRow === tRow) continue;
 			
 			//Find the direction of the link
 			if (eRow === tRow && entry.dataset.start < target.dataset.start) {
@@ -442,7 +437,11 @@ class Diagram {
 				targetSide = "top";
 			}
 			
-			start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
+			try {
+				start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
+			} catch {
+				throw new Error(`${entry.id}: tried to calc with ${sourceSide} and ${indices[sourceSide]}`);
+			}
 			
 			//Start with vertical line to line case
 			end = {

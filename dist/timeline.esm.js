@@ -265,31 +265,115 @@ class SvgConnector {
 }
 
 /**
- * Calculates an available position for diagram entries which have not had their row (Y-axis position) set manually.
- * This is fairly rudimentary - a row with sufficient empty space for each entry (and any it joins directly with) will be calculated.
- * If the entry splits from or merges with other entries, the nearest row to those entries will be sought.
- * This is most effectively used in a hybrid form, using some manual positioning, allowing simpler cases to be positioned automatically.
+ * @typedef {boolean[]} GridRow
+ * 
+ * @typedef {GridRow[]} DiagramGrid
+ * A two-dimensional array of boolean values, used as a grid to represent space in the diagram
  */
+
 class DiagramPositioner {
 	
 	/**
-	 * @param {number} years - Length of the timeline in years.
-	 * @param {number} [yearStart=1900] - The first year of the timeline.
-	 * @param {number} [rows] - The number of rows currently in the timeline (used for mixed manual and auto positioning).
+	 * @param {NodeList} entries - The timeline entries.
+	 * @param {number} start - The first year of the timeline.
+	 * @param {number} end - The last year of the timeline.
 	 */
-	constructor(years, yearStart = 1900, rows = 1) {
-		this._years = years;
-		this._yearStart = yearStart;
-		this._grid = Array.from(Array(rows+1), () => new Array(years).fill(false));
+	constructor(entries, start, end) {
+		this._entries = entries;
+		this._start = start;
+		this._end = end;
+		this._xLength = end - start;
+		this._grid = this._createGrid(entries);
+		this._groups = this._listGroups(entries);
+		
+		let groupGrids = {};
+		for (const g of this._groups) {
+			groupGrids[g] = this._createGrid();
+		}
+		this._groupGrids = groupGrids;
 	}
 	
 	/**
-	 * Set the row for the provided entry.
-	 * @param {HTMLElement} entry
+	 * Calculate the entry rows.
 	 */
-	setEntryRow(entry) {
+	calculate() {
+		const grouped = [...this._entries].filter(e => e.dataset.group);
+		const ungrouped = [...this._entries].filter(e => !e.dataset.group);
+		for (const entry of grouped) {
+			this._setEntryRow(entry, true);
+		}
+		
+		let increment = 0;
+		this._groups.forEach((group, i) => {
+			const entries = [...this._entries].filter(e => e.dataset.group == group);
+			if (i != 0) {
+				const prevGrid = this._groupGrids[this._groups[i-1]];
+				const overlap = this._getGridOverlap(prevGrid, this._groupGrids[group]);
+				increment -= overlap;
+			}
+			for (const entry of entries) {
+				entry.dataset.row = parseInt(entry.dataset.groupRow) + increment;
+			}
+			increment += this._groupGrids[group].length;
+		});
+		const rowCount = this._getRowCount(this._entries);
+		this._addGridRowsUntil(this._grid, rowCount);		
+		
+		//Block the used group spaces
+		for (const entry of grouped) {
+			this._blockGridSpace(entry.dataset.row, this._yearToGrid(entry.dataset.start), this._yearToGrid(entry.dataset.end), this._grid);
+		}
+		
+		//Position remaining entries
+		for (const entry of ungrouped) {
+			this._setEntryRow(entry);
+		}
+	}
+	
+	/**
+	 * Get the number of rows in the diagram.
+	 * @return {number}
+	 */
+	get rows() {
+		return this._grid.length;
+	}
+	
+	/****************************************************************
+	 * Entry methods.
+	 */
+	
+	/**
+	 * Get a list of all groups in the given entries.
+	 * @param {NodeList} entries
+	 * @return {Object}
+	 */
+	_listGroups(entries) {
+		return [...entries].reduce( (result, e) => { 
+			if (e.dataset.group && !result.includes(e.dataset.group)) {
+				result.push(e.dataset.group);
+			}
+			return result },
+			[]);
+	}
+	
+	/**
+	 * Set a row for the provided entry in the given grid.
+	 * @param {HTMLElement} entry
+	 * @param {boolean} [group = false] If true, the entry's position within it's group section will be set.
+	 */
+	_setEntryRow(entry, group = false) {
+		let grid = this._grid;
+		let rowProp = "row";
+		if (group) {
+			if (!entry.dataset.group) return;
+			grid = this._groupGrids[entry.dataset.group];
+			rowProp = "groupRow";
+		}
+		
+		if (entry.dataset[rowProp]) return;
+		
 		const start = this._yearToGrid(entry.dataset.start);
-		const end = this._yearToGrid(this._calcGroupEnd(entry));
+		const end = this._yearToGrid(this._calcLineEnd(entry));
 		let seek = null, near = null;
 		
 		if (entry.dataset.split) {
@@ -305,90 +389,115 @@ class DiagramPositioner {
 			}
 		}
 		
-		if (seek && near === null) {
-			if (!seek.dataset.row) {
-				this.setEntryRow(seek);
+		if (seek && (!group || seek.dataset.group == entry.dataset.group)) {
+			if (!Object.hasOwn(seek.dataset, rowProp)) {
+				this._setEntryRow(seek, group);
 			}
-			near = parseInt(seek.dataset.row);
+			near = parseInt(seek.dataset[rowProp]);
 		}
 		
-		const row = this._calcEntryRow(entry, start, end, near);
-		entry.dataset.row = row;
-		this._setGroupRow(entry);
+		const row = this._findGridSpace(start, end, grid, near);
+		entry.dataset[rowProp] = row;
+		this._setLineRow(entry, rowProp, grid);
 		try {
-			this._blockGridSpace(row, start, end);
+			this._blockGridSpace(row, start, end, grid);
 		} catch(e) {
 			console.warn(`${e}: called for ${entry.id} with row ${row}`);
 		}
 	}
 	
 	/**
-	 * Provide the grid X number for a given year
-	 * @param {number} year
-	 * @return {number}
-	 */
-	_yearToGrid(year) {
-		return parseInt(year) - parseInt(this._yearStart);
-	}
-	
-	/**
-	 * Get the number of rows in the diagram.
-	 * @return {number}
-	 */
-	get rows() {
-		return this._grid.length;
-	}
-	
-	/**
-	 * Set the row on entries grouped with the current entry
+	 * Set the row on entries in line with the current entry.
 	 * @protected
 	 * @param {HTMLElement} entry
+	 * @param {string} rowProp
+	 * @param {DiagramGrid} grid
 	 */
-	_setGroupRow(entry) {
+	_setLineRow(entry, rowProp, grid) {	
 		if (entry.dataset.become) {
 			const next = document.getElementById(entry.dataset.become);
-			
-			if(next.dataset.row) {
-				const s = next.dataset.start - this._yearStart;
-				const e = next.dataset.end - this._yearStart;
-				this._freeGridSpace(next.dataset.row, s, e);
+			if (entry.dataset.group !== next.dataset.group) {
+				console.warn(`${entry.id} and ${next.id} are directly connected but in separate groups. Amending ${next.id} to ${entry.dataset.group}`);
+				next.dataset.group = entry.dataset.group;
 			}
-			next.dataset.row = entry.dataset.row;
-			this._setGroupRow(next);
+			
+			if(Object.hasOwn(next.dataset, rowProp)) {
+				this._freeGridSpace(next.dataset[rowProp], this._yearToGrid(next.dataset.start), this._yearToGrid(next.dataset.end), grid);
+			}
+			next.dataset[rowProp] = entry.dataset[rowProp];
+			this._setLineRow(next, rowProp, grid);
 		}
 	}
-	
+		
 	/**
-	 * Calculate a suitable row for an entry and return it.
-	 * @protected
-	 * @param {HTMLElement} entry - the entry
-	 * @param {number} start - the number of units (years) from the start of the X axis the entry must start
-	 * @param {number} end - the number of units (years) from the start of the X axis the entry must end
-	 * @param {HTMLElement} near - Another entry this entry should try to be near
-	 * @return {number}
-	 */
-	_calcEntryRow(entry, start, end, near = null) {
-		if (entry.dataset.row) {
-			return entry.dataset.row;
-		}
-		if (near) {
-			return this._findNearestGridSpace(parseInt(near), start, end);
-		}
-		return this._findGridSpace(start, end);
-	}
-	
-	/**
-	 * Calculate the end year of an entry's group (i.e. the end of the last entry to which it directly joins).
+	 * Calculate the end year of an entry's line (i.e. the end of the last entry to which it directly joins).
 	 * @protected
 	 * @param {HTMLElement} entry
 	 * @return {number}
 	 */
-	_calcGroupEnd(entry) {
+	_calcLineEnd(entry) {
 		let end = entry.dataset.end;
 		if (entry.dataset.become) {
-			end = this._calcGroupEnd(document.getElementById(entry.dataset.become));			
+			end = this._calcLineEnd(document.getElementById(entry.dataset.become));			
 		}
 		return end;
+	}
+	
+	/****************************************************************
+	 * Grid methods.
+	 */
+	
+	/**
+	 * Compare the grids to see how much they can overlap without clashing entry positions.
+	 * @param {DiagramGrid} grid1
+	 * @param {DiagramGrid} grid2
+	 * @return {number}
+	 */
+	_getGridOverlap(grid1, grid2) {
+		//Maximum we want to overlap is with 1 row unique to second group.
+		let overlap = Math.min(grid1.length, grid2.length) - 1;
+
+		while (overlap > 0) {
+			let fits = true;
+			for(let i = 0; i < overlap && i < grid1.length; i++) {
+				if (!this._compareGridRows(grid1[grid1.length - overlap + i],grid2[i])) {
+					fits = false;
+					break;
+				}
+			}
+			if (fits == true) return overlap;
+			overlap--;
+		}
+		return overlap;
+	}
+	
+	/**
+	 * Create a grid.
+	 * If entries is set, the grid will grow to meet the number of fixed rows already set.
+	 * @param {NodeList|null} [entries = null] 
+	 * @return {DiagramGrid}
+	 */
+	_createGrid(entries = null) {
+		let rows = 1;
+		let setRows = [];
+		if (entries) {
+			rows = this._getRowCount(entries);
+		}
+		let grid = Array.from(Array(rows), () => new Array(this._xLength).fill(false));
+		for (const entry of setRows) {
+			grid = this._blockGridSpace(entry.dataset.row, this._yearToGrid(entry.start), this._yearToGrid(entry.end), grid);
+		}
+		return grid;
+	}
+	
+	/**
+	 * Return the number of row needed to accommodate the rows set in the given list of entries.
+	 * @param {NodeList} entries
+	 * @return {number}
+	 */
+	_getRowCount(entries) {
+		const setRows = [...entries].filter(e => e.dataset.row);
+		return ( setRows.length > 0 ? Math.max(...setRows.map(e => parseInt(e.dataset.row))) + 1 : 1);
 	}
 	
 	/**
@@ -397,98 +506,102 @@ class DiagramPositioner {
 	 * @protected
 	 * @param {number} start
 	 * @param {number} end
+	 * @param {DiagramGrid} grid
+	 * @param {number} near Find the nearest row to this row number
 	 * @return {number}
 	 */
-	_findGridSpace(start, end) {
-		let test = Math.floor(this.rows / 2);
+	_findGridSpace(start, end, grid, near = null) {
+		let test = ( near ? near : Math.floor(grid.length/2));
 		let above = false;
 		
-		for (let i = 0; i < this.rows; i++) {
+		for (let i = 0; i < grid.length; i++) {
 			test = ( above ? test - i : test + i );
-			if (this._checkGridSpace(test, start, end)) {
+			if (test < 0 || test > grid.length - 1) {
+				continue;
+			}
+			if (this._checkGridSpace(test, start, end, grid)) {
 				return test;
 			}
 			above = !above;
 		}
-		this._addGridRow();
-		return this.rows - 1;
+		this._addGridRow(grid);
+		return grid.length - 1;
 	}
 	
 	/**
-	 * Find the nearest row to that provided which is empty between start and end.
-	 * @protected
-	 * @param {number} y
-	 * @param {number} start
-	 * @param {number} end
+	 * Provide the grid X number for a given year
+	 * @param {number} year
+	 * @return {number}
 	 */
-	_findNearestGridSpace(y, start, end) {
-		let before = y, after = y;
-		
-		if (this._checkGridSpace(y, start, end)) { return y; }
-		
-		while(before > -1 && !this._checkGridSpace(before, start, end)) { before--; }
-		while(after < this.rows && !this._checkGridSpace(after, start, end)) { after++; }
-		
-		if (before == -1 && after == this.rows) {
-			this._addGridRow();
-			return this.rows - 1;
+	_yearToGrid(year) {
+		return parseInt(year) - parseInt(this._start);
+	}
+	
+	/**
+	 * Increase the grid size until the given row index is set.
+	 * @param {number} rows
+	 * @return {DiagramGrid}
+	 */
+	_addGridRowsUntil(grid, rows) {
+		while (grid.length - 1 !== rows) {
+			this._addGridRow(grid);
 		}
-		
-		if (after == this.rows) { return before; }
-		
-		if (before == -1) { return after; }
-		
-		if ((y - before) <= (after - y)) { return before; }
-		else { return after; }
+		return grid;
 	}
 	
 	/**
-	 * Add a row to the grid.
+	 * Add a row to a grid.
 	 * @protected
+	 * @param {DiagramGrid} grid
+	 * @return {DiagramGrid}
 	 */
-	_addGridRow() {
-		this._grid.push(new Array(this._years).fill(false));
+	_addGridRow(grid) {
+		grid.push(new Array(this._xLength).fill(false));
+		return grid;
 	}
 	
 	/**
-	 * Check if the given row y is empty between start and end.
+	 * Check if the given row y is empty between start and end in the given grid.
 	 * @protected
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
 	 * @return {boolean}
 	 */
-	_checkGridSpace(y, start, end) {
+	_checkGridSpace(y, start, end, grid) {
 		//In most instances, we don't want to extend to the end of the "end" year, but to the start. So that, e.g. we can join with another entry starting on that year and not overlap.  However, entries with the same start and end must take up some space.
 		if (start === end) {
 			end += 1;
 		}
-		
-		const part = this._grid[y].slice(start, end);
+		const part = grid[y].slice(start, end);
 		let result = part.every( e => e === false);
 		return result;
 	}
 	
 	/**
-	 * Set the space in row y from start to end as full.
+	 * Set the space in row y from start to end as full in the given grid.
 	 * @protected
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
+	 * @param {DiagramGrid} grid
 	 */
-	_blockGridSpace(y, start, end) {
-		this._markGridSpace(y, start, end, true);
+	_blockGridSpace(y, start, end, grid) {
+		this._markGridSpace(y, start, end, grid, true);
+		return grid;
 	}
 	
 	/**
-	 * Set the space in row y from start to end as empty.
+	 * Set the space in row y from start to end as empty in the given grid.
 	 * @protected
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
+	 * @param {DiagramGrid} grid
 	 */
-	_freeGridSpace(y, start, end) {
-		this._markGridSpace(y, start, end, false);
+	_freeGridSpace(y, start, end, grid) {
+		this._markGridSpace(y, start, end, grid, false);
+		return grid;
 	}
 	
 	/**
@@ -497,25 +610,43 @@ class DiagramPositioner {
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
+	 * @param {DiagramGrid} grid
 	 * @param {boolean} state
+	 * @return {DiagramGrid}
 	 */
-	_markGridSpace(y, start, end, state) {
-		if (!this._grid[y]) {
-			throw new Error(`Attempt to mark non-existent grid row ${y}`);
+	_markGridSpace(y, start, end, grid, state) {
+		if (!grid[y]) {
+			throw new Error(`Attempt to mark non-existent grid row ${y}. Grid has length ${grid.length}`);
 		}
 		let n = 0;
 		while (n < (end - start)) {
-			this._grid[y][start+n] = state;
+			grid[y][start+n] = state;
 			n++;
 		}
 		
 		//Mark space either end to keep entries from joining, if available
 		if (start > 0) {
-			this._grid[y][start-1] = state;
+			grid[y][start-1] = state;
 		}
-		if (end < this._grid[0].length - 1) {
-			this._grid[y][end] = state;
+		if (end < grid[0].length - 1) {
+			grid[y][end] = state;
 		}
+		return grid;
+	}
+	
+	/**
+	 * Check if the two grid rows can be fit together without any clashes in used space.
+	 * @param {GridRow} row1
+	 * @param {GridRow} row2
+	 * @return {boolean}
+	 */
+	_compareGridRows(row1, row2) {
+		for (const [i, e] of row1.entries()) {
+			if (e && row2[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
@@ -673,7 +804,7 @@ class Diagram {
 	}
 	
 	/**
-	 * Set the row for all entries, using automatic diagramPositioner if available
+	 * Set the row for all entries using automatic diagramPositioner
 	 * @protected
 	 */
 	_prepareRows() {
@@ -686,16 +817,9 @@ class Diagram {
 			}
 		}
 
-		//If we are using the positioner only (otherwise must be manually set)
-		if (typeof DiagramPositioner === "function") {
-			const years = this._config.yearEnd - this._config.yearStart;
-			const dp = new DiagramPositioner(years, this._config.yearStart, rows);
-			
-			for (const entry of this._entries) {
-				dp.setEntryRow(entry);
-			}
-			rows = dp.rows;
-		}
+		const dp = new DiagramPositioner(this._entries, this._config.yearStart, this._config.yearEnd);
+		dp.calculate();
+		rows = dp.rows;
 		this._setConfigProp("rows", rows);
 	}
 	
@@ -951,11 +1075,13 @@ class Diagram {
 		};
 		
 		for (const link of links) {
-			const target = document.getElementById(link);			
+			const target = document.getElementById(link);
 			let sourceSide, targetSide, start = { x: 0, y: 0}, end = { x: 0, y: 0};
 			
 			const eRow = parseInt(entry.dataset.row);
 			const tRow = parseInt(target.dataset.row);
+						
+			if (eRow === tRow) continue;
 			
 			//Find the direction of the link
 			if (eRow === tRow && entry.dataset.start < target.dataset.start) {
@@ -979,7 +1105,11 @@ class Diagram {
 				targetSide = "top";
 			}
 			
-			start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
+			try {
+				start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
+			} catch {
+				throw new Error(`${entry.id}: tried to calc with ${sourceSide} and ${indices[sourceSide]}`);
+			}
 			
 			//Start with vertical line to line case
 			end = {
