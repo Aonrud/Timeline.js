@@ -94,6 +94,7 @@ By default, entries should be `<div>` elements and the container has the id `#di
 |data-links|No|A space-separated list of entry IDs|If specified, the entry is linked with a dashed line to each entry ID. Useful for looser associations between entries that should not be connected directly.|
 |data-colour|No|A CSS colour value|The colour of the border around the entry and connections from it. |
 |data-irregular|No|true or false|Set to true for entries that are 'irregular' or should not be unbroken from their start to end dates. If set to true, the entry will be drawn with a broken line.|
+|data-group|No|<string>|A named group to which this entry belongs. This can be useful, for example, to keep entries that are not directly connected but have some shared property near each other in the diagram.|
 
 ### Javascript 
 
@@ -233,15 +234,17 @@ The provided classes will position the controls in a box in the bottom right cor
 
 The X axis position of each entry is manually set by specifing the 'data-start' attribute *(**note:** If `data-start` is before the configured start of the timeline, it will be shown at the start with an arrow indicating it pre-exists the period shown)*. The extent of the entry along the timeline is determined either by the 'data-end' attribute, or extends to the end of the timeline.
 
-Specifying the row manually for each entry is not required. However, only some basic tests are performed to choose a suitable row for each entry when it is not specified, so aside from simple examples, it is recommended to manually set 'data-row' at least on a proportion of entries and those with complex links to ensure a sensible layout.
+Specifying the row manually for each entry is not required. However, only some basic tests are performed to choose a suitable row for each entry when it is not specified, so aside from simple examples, it is recommended to manually set 'data-row' on a proportion of entries and those with complex links to ensure a sensible layout.
 
-The row is determined in source-code order for each entry if it is omitted. A row is determined as follows:
+The row is determined for each entry if it is omitted, in the order that they appear (either source-code order if added in HTML, or their array order if added via Javascript). A row is determined as follows:
 
 * Available space, starting from the centre of the diagram.
 * Connected entries (via 'data-becomes' attribute) must be on the same row.
 * Split and merge entries should aim to be as close to their linked entries as possible, depending on nearest available space.
 
-[^1]: 
+### Groups
+
+If any groups have been specified, the same logic is applied, but to entries matching each group separately. The groups are then positioned on the diagram one after the other. Grouped and un-grouped entries can be mixed: any ungrouped entries will be positioned in an available space after all groups are completed.
 
 ## Javascript Documentation
 
