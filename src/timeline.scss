@@ -14,7 +14,6 @@
 	--tl-height-row: 50px;
 	--tl-padding: 5px;
 	--tl-size-border: 3px;
-	--tl-scale-event: 0.3;
 }
 
 /* Stacking */
@@ -116,61 +115,53 @@
 
 .event {
 	position: absolute;
-	transition-property: width, height;
-	transition-duration: 0.2s;
-	transition-timing-function: ease;
 	cursor: help;
 	overflow: hidden;
+	width: 1.5em;
+	height: 1.5em;
+	color: transparent;
+	
+	&:after {
+		content: "ℹ";
+		line-height: 0.75em;
+		color: var(--tl-colour-text);
+		border: var(--tl-size-border) solid var(--tl-colour-stroke);
+		background: var(--tl-colour-entry);
+		border-radius: 50%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		padding: 0.2em;
+		text-align: center;
+	}
+	
 	&:hover, &:focus {
+		&:after {
+			content: none;
+		}
 		span:before {
 			font-weight: 700;
 			content: attr(data-year) ': ';
 		}
 	}
 	
-	//Use transform scale() to expand from centre;
 	&[data-target] {
-		background: var(--tl-colour-stroke);
-		color: var(--tl-colour-stroke);
-		width: calc(var(--tl-height-box) * 1.5);
-		height: calc(var(--tl-height-box) * 1.5);
-		text-align: center;
-		padding: 0.2em;
-		border: var(--tl-size-border) solid var(--tl-colour-stroke);
-		border-radius: 50%;
-		transform: scale(var(--tl-scale-event));
 		&:hover, &:focus {
 			width: calc(var(--tl-height-box) * 3);
-			height: calc(var(--tl-height-box) * 3);
-			transform: scale(1);
-			border-radius: var(--tl-size-border);
-			background: var(--tl-colour-entry);
-			color: var(--tl-colour-text);
-		}
-	}
-	
-	//Use dimension change to expand from top left corner;
-	&:not([data-target]) {
-		width: 1.5em;
-		height: 1.5em;
-		transition-duration: 0s;
-		color: transparent;
-		&:after {
-			box-sizing: border-box;
-			content: "ℹ";
-			line-height: 1em;
-			color: var(--tl-colour-text);
-			border: 1px solid var(--tl-colour-text);
-			background: var(--tl-colour-entry);
-			border-radius: 50%;
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
+			height: auto;
+			box-shadow: 0 0 var(--tl-size-border);
 			padding: 0.2em;
+			border-radius: var(--tl-size-border);
+			background: var(--tl-colour-background);
+			color: var(--tl-colour-text);
 			text-align: center;
 		}
+	}
+		
+	&:not([data-target]) {
+		border-color: var(--tl-color-text);
 		&:hover, &:focus {
 			width: var(--tl-size-border);
 			height: calc(100% - var(--tl-height-row) + 2em);
@@ -178,14 +169,14 @@
 			border-left: var(--tl-size-border) dashed var(--tl-colour-text);
 			background: transparent;
 			color: var(--tl-colour-text);
-			transition-duration: 0.2s;
 			overflow: visible;
 			span {
 				display: inline-block;
 				width: max-content;
 				padding: 0.3em;
 				background: var(--tl-colour-background);
-				
+				border-radius: var(--tl-size-border);
+				box-shadow: 0 0 var(--tl-size-border);
 			}
 			&:after {
 				content: none;
@@ -197,7 +188,7 @@
 .timeline-container {
 	background: var(--tl-colour-background);
 	position: relative;
-	* {
+	*, *:before, *:after {
 		box-sizing: border-box;
 	}
 }

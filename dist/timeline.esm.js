@@ -954,24 +954,25 @@ class Diagram {
 			event.innerText = "";
 			event.append(span);
 			
+			let colour = null;
 			if (event.dataset.colour) {
-				const classSafe = `colour-${event.dataset.colour.replace(/[!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '')}`;
-				event.classList.add(classSafe);
-				
-				let c = `.event:not([data-target]).${classSafe}:after { color: ${event.dataset.colour}; border-color: ${event.dataset.colour} }`;
-				c += `.event.${classSafe}:hover span { color: ${event.dataset.colour} }`;
-				this._addCss(c);
+				colour = event.dataset.colour;
 			}
-						
 			if (event.dataset.target) {
 				const target = document.getElementById(event.dataset.target);
 				top = this._calcTop(target) + ((this._config.boxHeight - event.offsetHeight) * 0.5);
 				left = left - (event.offsetWidth * 0.5);
-				
 				if (target.dataset.colour) {
-					const css = `.event[data-target="${target.id}"] {border-color: ${target.dataset.colour}; color: ${target.dataset.colour}; background-color: ${target.dataset.colour};}`;
-					this._addCss(css);
+					colour = target.dataset.colour;
 				}
+			}
+			
+			if (colour) {
+				const classSafe = `colour-${colour.replace(/[!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '')}`;
+				event.classList.add(classSafe);
+				let c = `.event.${classSafe}:after { color: ${colour}; border-color: ${colour} }`;
+				c += `.event.${classSafe}:hover { color: ${colour} }`;
+				this._addCss(c);
 			}
 			
 			event.style.left = left + "px";
