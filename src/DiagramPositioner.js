@@ -33,6 +33,7 @@ class DiagramPositioner {
 	calculate() {
 		const grouped = [...this._entries].filter(e => e.dataset.group);
 		const ungrouped = [...this._entries].filter(e => !e.dataset.group);
+		this._groupRange = {};
 		for (const entry of grouped) {
 			this._setEntryRow(entry, true);
 		}
@@ -48,14 +49,24 @@ class DiagramPositioner {
 			for (const entry of entries) {
 				entry.dataset.row = parseInt(entry.dataset.groupRow) + increment;
 			}
+			this._groupRange[group] = [ increment, increment + this._groupGrids[group].length ];
+			
 			increment += this._groupGrids[group].length;
 		});
-		const rowCount = this._getRowCount(this._entries);
-		this._addGridRowsUntil(this._grid, rowCount);		
 		
-		//Block the used group spaces
+		const rowCount = this._getRowCount(this._entries);
+		this._addGridRowsUntil(this._grid, rowCount);
+		
+		//Block all spaces used by grouped entries before proceeding. (Separate loop ensures blocks are in place before adjustment checks).
 		for (const entry of grouped) {
 			this._blockGridSpace(entry.dataset.row, this._yearToGrid(entry.dataset.start), this._yearToGrid(entry.dataset.end), this._grid);
+		}
+		
+		for (const entry of grouped) {
+			//Adjust connections that cross between groups
+			if (entry.dataset.split || entry.dataset.merge) {
+				this._adjustConnectedEntry(entry);
+			}
 		}
 		
 		//Position remaining entries
@@ -88,6 +99,51 @@ class DiagramPositioner {
 			}
 			return result },
 			[]);
+	}
+	
+	/**
+	 * Adjust the position of the entry if it splits from or merges with an entry in a different group.
+	 * @param {HTMLElement} entry
+	 */
+	_adjustConnectedEntry(entry) {
+		const targetID = ( entry.dataset.split ? entry.dataset.split : entry.dataset.merge );
+		const targetEl = document.getElementById(targetID);
+		if (targetEl.dataset.group !== entry.dataset.group) {
+			console.log(`${entry.id} is in different group from target ${targetID}`);
+			let targetRow = ( targetEl.dataset.row - entry.dataset.row > 0 ? this._groupRange[entry.dataset.group][1] : this._groupRange[entry.dataset.group][0] );
+			
+			const newRow = this._checkGridRange(targetRow, entry.dataset.row, this._yearToGrid(entry.dataset.start), this._yearToGrid(this._calcLineEnd(entry)), this._grid);
+			if (newRow !== undefined) {
+				this._moveEntry(entry, newRow);
+				
+				const linked = [...this._entries].filter(e => e.dataset.split == entry.id || e.dataset.merge == entry.id);
+				console.log(linked);
+				for (const link of linked) {
+					if (link.dataset.group == entry.dataset.group) {
+						const move = this._checkGridRange(entry.dataset.row, link.dataset.row, this._yearToGrid(link.dataset.start), this._yearToGrid(this._calcLineEnd(link)), this._grid);
+						if (move !== undefined) {
+							this._moveEntry(link, move);
+						}
+					}
+				}
+				return;
+			}
+		}
+	}
+	
+	/**
+	 * Move an entry to a new row.
+	 * @param {HTMLElement} entry
+	 * @param {number} row
+	 */
+	_moveEntry(entry, row) {
+		const s = this._yearToGrid(entry.dataset.start);
+		const e = this._yearToGrid(this._calcLineEnd(entry));
+		console.log(`Moving ${entry.id} from ${entry.dataset.row} to ${row}.`);
+		this._freeGridSpace(entry.dataset.row, s, e, this._grid);
+		entry.dataset.row = row;
+		this._setLineRow(entry, "row", this._grid);
+		this._blockGridSpace(entry.dataset.row, s, e, this._grid);
 	}
 	
 	/**
@@ -295,11 +351,33 @@ class DiagramPositioner {
 	}
 	
 	/**
+	 * Check for a space between the rows specified, starting with y1.
+	 * Return the row number if a space is found, otherwise nothing.
+	 * @param {number} y1
+	 * @param {number} y2
+	 * @param {number} start
+	 * @param {number} end
+	 * @param {DiagramGrid} grid
+	 * @return {number|undefined}
+	 */
+	_checkGridRange(y1, y2, start, end, grid) {
+		console.log(`Checking from ${y1} to ${y2}`);
+		while (y1 != y2) {
+			if (this._checkGridSpace(y1, start, end, grid)) {
+				console.log(`Space found at ${y1}.`);
+				return y1;
+			}
+			y1 = ( y1 > y2 ? parseInt(y1)-1 : parseInt(y1)+1);
+		}
+	}
+	
+	/**
 	 * Check if the given row y is empty between start and end in the given grid.
 	 * @protected
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
+	 * @param {DiagramGrid} grid
 	 * @return {boolean}
 	 */
 	_checkGridSpace(y, start, end, grid) {
@@ -309,6 +387,7 @@ class DiagramPositioner {
 		}
 		const part = grid[y].slice(start, end);
 		let result = part.every( e => e === false);
+		if (y == 9) console.log(part);
 		return result;
 	}
 	
@@ -352,6 +431,9 @@ class DiagramPositioner {
 		if (!grid[y]) {
 			throw new Error(`Attempt to mark non-existent grid row ${y}. Grid has length ${grid.length}`);
 		}
+		
+		if (y == 9 && grid == this._grid) console.log(`Blocking row 9 between ${start} and ${end}`);
+		
 		let n = 0;
 		while (n < (end - start)) {
 			grid[y][start+n] = state;
