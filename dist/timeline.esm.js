@@ -375,7 +375,6 @@ class DiagramPositioner {
 		const targetID = ( entry.dataset.split ? entry.dataset.split : entry.dataset.merge );
 		const targetEl = document.getElementById(targetID);
 		if (targetEl.dataset.group !== entry.dataset.group) {
-			console.log(`${entry.id} is in different group from target ${targetID}`);
 			let targetRow = ( targetEl.dataset.row - entry.dataset.row > 0 ? this._groupRange[entry.dataset.group][1] : this._groupRange[entry.dataset.group][0] );
 			
 			const newRow = this._checkGridRange(targetRow, entry.dataset.row, this._yearToGrid(entry.dataset.start), this._yearToGrid(this._calcLineEnd(entry)), this._grid);
@@ -383,7 +382,6 @@ class DiagramPositioner {
 				this._moveEntry(entry, newRow);
 				
 				const linked = [...this._entries].filter(e => e.dataset.split == entry.id || e.dataset.merge == entry.id);
-				console.log(linked);
 				for (const link of linked) {
 					if (link.dataset.group == entry.dataset.group) {
 						const move = this._checkGridRange(entry.dataset.row, link.dataset.row, this._yearToGrid(link.dataset.start), this._yearToGrid(this._calcLineEnd(link)), this._grid);
@@ -405,7 +403,6 @@ class DiagramPositioner {
 	_moveEntry(entry, row) {
 		const s = this._yearToGrid(entry.dataset.start);
 		const e = this._yearToGrid(this._calcLineEnd(entry));
-		console.log(`Moving ${entry.id} from ${entry.dataset.row} to ${row}.`);
 		this._freeGridSpace(entry.dataset.row, s, e, this._grid);
 		entry.dataset.row = row;
 		this._setLineRow(entry, "row", this._grid);
@@ -627,10 +624,8 @@ class DiagramPositioner {
 	 * @return {number|undefined}
 	 */
 	_checkGridRange(y1, y2, start, end, grid) {
-		console.log(`Checking from ${y1} to ${y2}`);
 		while (y1 != y2) {
 			if (this._checkGridSpace(y1, start, end, grid)) {
-				console.log(`Space found at ${y1}.`);
 				return y1;
 			}
 			y1 = ( y1 > y2 ? parseInt(y1)-1 : parseInt(y1)+1);
@@ -653,7 +648,6 @@ class DiagramPositioner {
 		}
 		const part = grid[y].slice(start, end);
 		let result = part.every( e => e === false);
-		if (y == 9) console.log(part);
 		return result;
 	}
 	
@@ -697,9 +691,7 @@ class DiagramPositioner {
 		if (!grid[y]) {
 			throw new Error(`Attempt to mark non-existent grid row ${y}. Grid has length ${grid.length}`);
 		}
-		
-		if (y == 9 && grid == this._grid) console.log(`Blocking row 9 between ${start} and ${end}`);
-		
+				
 		let n = 0;
 		while (n < (end - start)) {
 			grid[y][start+n] = state;
