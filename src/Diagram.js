@@ -413,8 +413,6 @@ class Diagram {
 			
 			const eRow = parseInt(entry.dataset.row);
 			const tRow = parseInt(target.dataset.row);
-						
-			if (eRow === tRow) continue;
 			
 			//Find the direction of the link
 			if (eRow === tRow && entry.dataset.start < target.dataset.start) {
@@ -437,12 +435,7 @@ class Diagram {
 				sourceSide = "bottom";
 				targetSide = "top";
 			}
-			
-			try {
-				start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
-			} catch {
-				throw new Error(`${entry.id}: tried to calc with ${sourceSide} and ${indices[sourceSide]}`);
-			}
+			start = this._getJoinCoords(entry, sourceSide, indices[sourceSide]);
 			
 			//Start with vertical line to line case
 			end = {
