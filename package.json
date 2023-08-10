@@ -1,9 +1,24 @@
 {
-  "name": "timeline",
+  "name": "Timeline.js",
   "version": "2.1.1",
+  "description": "Draw a timeline diagram",
   "type": "module",
-  "description": "Draw a timeline diagram.",
-  "main": "dist/timeline.js",
+  "main": "dist/timeline.min.js",
+  "module": "dist/timeline.esm.js",
+  "author": "Aonghus Storey",
+  "license": "GPL-3.0-or-later",
+  "keywords": [
+    "diagram",
+    "graph",
+    "chart",
+    "timeline",
+    "svg",
+    "visualisation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aonrud/Timeline.js"
+  },
   "scripts": {
     "build": "npm-run-all css js docs",
     "js": "rollup -c",
@@ -12,9 +27,6 @@
     "css-min": "sass --style compressed src/timeline.scss > dist/timeline.min.css && sass --style compressed src/timeline-dark.scss > dist/timeline-dark.min.css",
     "docs": "jsdoc2md -d 3 -t README.hbs src/Timeline.js  > README.md"
   },
-  "keywords": [],
-  "author": "Aonghus Storey",
-  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@panzoom/panzoom": "^4.4.1",
     "@rollup/plugin-eslint": "^9.0.4",
