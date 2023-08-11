@@ -329,8 +329,8 @@
 			const rowCount = this._getRowCount(this._entries);
 			this._addGridRowsUntil(this._grid, rowCount);
 			
-			//Block all spaces used by grouped entries before proceeding. (Separate loop ensures blocks are in place before adjustment checks).
-			for (const entry of grouped) {
+			//Block all used spaces before proceeding.
+			for (const entry of [...this._entries].filter(e => e.dataset.row)) {
 				this._blockGridSpace(entry.dataset.row, this._yearToGrid(entry.dataset.start), this._yearToGrid(entry.dataset.end), this._grid);
 			}
 			
