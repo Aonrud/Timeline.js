@@ -123,7 +123,9 @@
   color: transparent;
 }
 .event:after {
-  content: "ℹ";
+  content: "i";
+  font-family: monospace;
+  font-weight: 700;
   line-height: 0.75em;
   color: var(--tl-colour-text);
   border: var(--tl-size-border) solid var(--tl-colour-stroke);
