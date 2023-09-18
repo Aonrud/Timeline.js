@@ -59,7 +59,7 @@ This is rendered as below:
 
 ### Live examples
 
-* [Electoral Parties in the Republic of Ireland](https://aonrud.github.io/Irish-Electoral-Parties/s)
+* [Electoral Parties in the Republic of Ireland](https://aonrud.github.io/Irish-Electoral-Parties/)
 * [Timeline of the Irish Left](https://www.leftarchive.ie/page/timeline-of-the-irish-left/) on the Irish Left Archive
 
 ## Javascript
