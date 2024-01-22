@@ -7,13 +7,10 @@ class DiagramGrid {
 	/**
 	 * Create a this._grid.
 	 * If entries is set, the this._grid will grow to meet the number of fixed rows already set.
-	 * @param {NodeList|null} [entries = null] 
-	 * @return {DiagramGrid}
 	 */
-	constructor(xlength) {
-		this._xlength = xlength;
+	constructor() {
+		this._xlength = 0;
 		this._grid = [];
-		// this._addGridRow;
 	}
 	
 	/**

@@ -279,13 +279,10 @@
 		/**
 		 * Create a this._grid.
 		 * If entries is set, the this._grid will grow to meet the number of fixed rows already set.
-		 * @param {NodeList|null} [entries = null] 
-		 * @return {DiagramGrid}
 		 */
-		constructor(xlength) {
-			this._xlength = xlength;
+		constructor() {
+			this._xlength = 0;
 			this._grid = [];
-			// this._addGridRow;
 		}
 		
 		/**
@@ -687,12 +684,12 @@
 			if (entry.dataset.become) {
 				const next = document.getElementById(entry.dataset.become);
 				
-				//TODO: Change this approach. It shouldn't be necessary for a split to be in the same group…
 				if (entry.dataset.group !== next.dataset.group) {
 					console.warn(`${entry.id} and ${next.id} are directly connected but in separate groups. Amending ${next.id} to ${entry.dataset.group}`);
 					next.dataset.group = entry.dataset.group;
 				}
 				
+				//If the 'becomes' entry has a row set, remove it.
 				if(Object.hasOwn(next.dataset, rowProp)) {
 					grid.freeGridSpace(next.dataset[rowProp], this._yearToGrid(next.dataset.start), this._yearToGrid(next.dataset.end));
 				}
@@ -716,7 +713,7 @@
 		}
 		
 		/**
-		 * Provide the this._grid X number for a given year
+		 * Provide the grid x number for a given year
 		 * @param {number} year
 		 * @return {number}
 		 */
