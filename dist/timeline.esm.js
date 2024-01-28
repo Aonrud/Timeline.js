@@ -271,8 +271,7 @@ class SvgConnector {
 class DiagramGrid {
 		
 	/**
-	 * Create a this._grid.
-	 * If entries is set, the this._grid will grow to meet the number of fixed rows already set.
+	 * Create a grid.
 	 */
 	constructor() {
 		this._xlength = 0;
@@ -306,15 +305,13 @@ class DiagramGrid {
 	}
 		
 	/**
-	 * Increase the this._grid size until the given row index is set.
+	 * Increase the grid size until the given row index is set.
 	 * @param {number} rows
-	 * @return {DiagramGrid}
 	 */
 	addGridRowsUntil(rows) {
 		while (this._grid.length - 1 !== rows) {
 			this.addGridRow();
 		}
-		return this;
 	}
 	
 	/**
@@ -345,7 +342,7 @@ class DiagramGrid {
 	}
 	
 	/**
-	 * Check if the given row y is empty between start and end in the given this._grid.
+	 * Check if the given row y is empty between start and end.
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
@@ -362,7 +359,7 @@ class DiagramGrid {
 	}
 	
 	/**
-	 * Set the space in row y from start to end as full in the given this._grid.
+	 * Set the space in row y from start to end as full.
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
@@ -373,7 +370,7 @@ class DiagramGrid {
 	}
 	
 	/**
-	 * Set the space in row y from start to end as empty in the given this._grid.
+	 * Set the space in row y from start to end as empty.
 	 * @param {number} y
 	 * @param {number} start
 	 * @param {number} end
@@ -392,7 +389,6 @@ class DiagramGrid {
 	 * @param {number} end
 	 * @param {DiagramGrid} this._grid
 	 * @param {boolean} state
-	 * @return {DiagramGrid}
 	 */
 	_markGridSpace(y, start, end, state) {
 		if (!this._grid[y]) {
@@ -412,24 +408,8 @@ class DiagramGrid {
 		if (end < this._grid[0].length - 1) {
 			this._grid[y][end] = state;
 		}
-		return this._grid;
 	}
-		
-	/**
-	 * Check if two rows can be fit together without any clashes in used space.
-	 * @param {GridRow} row1
-	 * @param {GridRow} row2
-	 * @return {boolean}
-	 */
-	static compareGridRows(row1, row2) {
-		for (const [i, e] of row1.entries()) {
-			if (e && row2[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
+
 	/**
 	 * Get the current number of rows.
 	 * @return {number}
@@ -438,6 +418,11 @@ class DiagramGrid {
 		return this._grid.length;
 	}
 	
+	/**
+	 * Get a grid row
+	 * @param index
+	 * @return {GridRow}
+	 */
 	getRow(index) {
 		return this._grid[index];
 	}
@@ -464,6 +449,21 @@ class DiagramGrid {
 			overlap--;
 		}
 		return overlap;
+	}
+	
+	/**
+	 * Check if two rows can be fit together without any clashes in used space.
+	 * @param {GridRow} row1
+	 * @param {GridRow} row2
+	 * @return {boolean}
+	 */
+	static compareGridRows(row1, row2) {
+		for (const [i, e] of row1.entries()) {
+			if (e && row2[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
