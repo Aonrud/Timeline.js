@@ -241,6 +241,10 @@
 	background: var(--tl-colour-background-feature);
 	padding: 5px;
 	text-align: center;
+	input[name="finder"] {
+		box-sizing: border-box;
+		width: 100%;
+	}
 }
 
 details.controls {
@@ -274,6 +278,7 @@ details.controls {
 	& > div {
 		position: absolute;
 		top: -2px;
+		width: 100%;
 	}
 	div > ul {
 		max-width: 100%;

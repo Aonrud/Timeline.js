@@ -234,6 +234,10 @@
   padding: 5px;
   text-align: center;
 }
+.controls input[name=finder] {
+  box-sizing: border-box;
+  width: 100%;
+}
 
 details.controls {
   height: 1em;
@@ -267,6 +271,7 @@ details.controls[open] {
 .filtered-entries > div {
   position: absolute;
   top: -2px;
+  width: 100%;
 }
 .filtered-entries div > ul {
   max-width: 100%;

@@ -1560,9 +1560,6 @@
 			//Get rid of browser suggestions
 			finder.autocomplete = "off";
 			
-			//Set results container width to match the input
-			inner.style.width = finder.offsetWidth + "px";
-			
 			//Set config for convenience of other methods
 			const findConfig = {
 				form: form,
