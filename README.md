@@ -211,7 +211,7 @@ If a URL hash is present on load and Panzoom is enabled, the timeline will pan t
 
 ### Example
 
-An example putting these together as a controls div within the diagram.
+An example putting these together as a controls `<div>` within the diagram.
 
 The provided classes will position the controls in a box in the bottom right corner of the timeline container.
 
@@ -227,6 +227,16 @@ The provided classes will position the controls in a box in the bottom right cor
 		<button id="timeline-zoom-in" type="button">Zoom In</button>
 	</div>
 </div>
+
+```
+
+Alternatively, use a `<details>` element instead of `<div>` to make a collapsible controls box with a simple transition applied.
+
+```html
+<details class="controls">
+	<summary>Search</summary>
+	…
+</details>
 
 ```
 

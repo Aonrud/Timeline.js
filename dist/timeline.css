@@ -235,6 +235,24 @@
   text-align: center;
 }
 
+details.controls {
+  height: 1em;
+  width: 5em;
+  transition-property: width, height;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in;
+}
+details.controls summary {
+  cursor: pointer;
+}
+details.controls[open] {
+  height: 8em;
+  width: 15em;
+  transition-property: width, height;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in;
+}
+
 .zoom-buttons {
   margin: 5px 0;
 }
