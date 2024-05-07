@@ -1,6 +1,6 @@
 {
   "name": "Timeline.js",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "description": "Draw a timeline diagram",
   "type": "module",
   "main": "dist/timeline.min.js",
