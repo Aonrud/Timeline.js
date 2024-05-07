@@ -338,7 +338,7 @@ The timelineFind event is fired when panToEntry() is called. (Only applicable if
 
 ## Licence
 
-Copyright (C) 2021-23 Aonghus Storey
+Copyright (C) 2021-24 Aonghus Storey
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
